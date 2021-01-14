@@ -4,8 +4,11 @@ Obiekty religijne (amenity = place_of_worship) z bazy OpenStreetMap.
 
 
 Backend: Flask
+
 Baza danych: MongoDB
+
 Framework CSS: Bulma
+
 Mapa - Leaflet.js
 
 Wersja Pythona: 3.9.1.
