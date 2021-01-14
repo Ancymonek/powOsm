@@ -1,0 +1,294 @@
+import json
+from datetime import date, datetime
+import geojson
+import requests
+from osm2geojson import json2geojson
+from pymongo import GEOSPHERE, TEXT, MongoClient
+from pymongo.errors import BulkWriteError
+
+from settings import (
+    OVERPASS_ENDPOINTS,
+    Path,
+    input_file,
+    logging,
+    pow_filter_values,
+    pow_filter_short_values,
+    uri,
+)
+
+
+def filter_geojson(file):
+    with open(file, encoding="utf-8") as json_file:
+        data = json.load(json_file)
+        for feature in data["features"]:
+            for key, value in list(feature["properties"]["tags"].items()):
+                if (
+                    key == "name"
+                    and validate_input(value, pow_filter_values, "kościoła")
+                ) or (key == "name" and value.isupper()):
+                    feature["properties"]["n"] = 1
+
+                if key == "name" and validate_input(
+                    value, pow_filter_short_values, "kościoła"
+                ):
+                    feature["properties"]["n"] = 2
+
+                if "religion" not in feature["properties"]["tags"]:
+                    feature["properties"]["r"] = 1
+
+                if "denomination" not in feature["properties"]["tags"]:
+                    feature["properties"]["d"] = 1
+
+                if key == "building" and value == "yes":
+                    feature["properties"]["b"] = 1
+    return data
+
+
+def validate_input(input_value: str, filter_list: list, excluded_value: str):
+
+    matches = []
+
+    for word in filter_list:
+        if (
+            word.lower() in input_value.lower()
+            and excluded_value not in input_value.lower()
+        ):
+            matches.append(word)
+
+    if matches:
+        return True
+    else:
+        return None
+
+
+def overpass_to_geojson(
+    output_file: Path,
+    area_id: int,
+    tag_name: str,
+    tag_value: str,
+    out: str = "center",
+    overpass: list[str] = OVERPASS_ENDPOINTS[0],
+    force_download=False,
+):
+    # 1. Step - verify if file exists and wasn't created today
+    output_file_lastmod = datetime.fromtimestamp(output_file.stat().st_mtime).date()
+    today = date.today()  #
+
+    if (
+        output_file.is_file()
+        and output_file_lastmod == today
+        and force_download is False
+    ):
+        logging.info(f"Finish: File is up to date. (generated: {output_file_lastmod})")
+        return False
+
+    # 2. Step 2 - connecting and getting data from Overpass
+    else:
+        logging.info(
+            f"Info: Export .geojson file last modification date: {output_file_lastmod}"
+        )
+
+        compact_query = f'[out:json][timeout:20005];area({area_id})->.searchArea;(node["{tag_name}"="{tag_value}"](area.searchArea);way["{tag_name}"="{tag_value}"](area.searchArea);relation["{tag_name}"="{tag_value}"](area.searchArea););out {out};'
+
+        try:
+            query = overpass + "?data=" + compact_query
+            logging.info(f"Start: Connecting to Overpass server: {overpass}")
+            response = requests.get(query)
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as err:
+            raise SystemExit(err)
+
+        logging.info("Start: Getting data and extracted to .geojson object..")
+        if response.status_code == 200:
+            try:
+                geojson_response = json2geojson(response.text, log_level="INFO")
+            except:
+                geojson_response = ""
+                logging.error(
+                    "Finish: Error when converting response .json to .geojson"
+                )
+
+            with open(output_file, mode="w", encoding="utf-8") as f:
+                logging.info(f"Start: Dumping .geojson object to file")
+                geojson.dump(geojson_response, f)
+                logging.info(
+                    "Finish: GeoJSON object successfully dumped to .geojson file"
+                )
+                return True
+
+
+def geojson_minify(
+    input_file: Path, output_file: Path, keep_tags: list = [], filter_tag: list = []
+):
+    if not input_file.is_file():
+        return None
+
+    with open(input_file, encoding="utf-8") as json_file:
+        input_size = input_file.stat().st_size
+        logging.info(f"Start: Opening .json file {input_file}, size: {input_size} B")
+        data = json.load(json_file)
+
+        for feature in data["features"]:
+            # simplify coordinates (works only with geojson Node geometry)
+            lat = float("%.5f" % feature["geometry"]["coordinates"][0])
+            long = float("%.5f" % feature["geometry"]["coordinates"][1])
+            feature["geometry"]["coordinates"] = [lat, long]
+
+            # trim osm id and type to single id (i.e. type = 'way', id = '298110952' to w298110952)
+            if feature["properties"]["type"] and feature["properties"]["id"]:
+                feature_type = (
+                    feature["properties"]["type"][0].lower()
+                    + ""
+                    + str(feature["properties"]["id"])
+                )
+                feature["properties"]["id"] = feature_type
+                del feature["properties"]["type"]
+
+            if len(filter_tag) == 2:
+                for key, value in list(feature["properties"]["tags"].items()):
+                    if key == filter_tag[0] and validate_input(
+                        value, filter_tag[1], ["kościoła"]
+                    ):
+                        feature["properties"]["x"] = 1
+
+            if keep_tags:
+                for key, value in list(feature["properties"]["tags"].items()):
+                    if key not in keep_tags:
+                        del feature["properties"]["tags"][key]
+            else:
+                del feature["properties"]["tags"]
+
+        logging.info(
+            f"Info: Number of features in feature collection: {len(data['features'])}"
+        )
+
+        with open(output_file, mode="w", encoding="utf-8") as f:
+            logging.info(f"Start: Dumping .geojson object to file {output_file}")
+            geojson.dump(data, f, separators=(",", ":"))
+
+        output_size = output_file.stat().st_size
+        diff = round((output_size / input_size) * 100, 3)
+        logging.info(
+            f"Finish: GeoJSON object successfully dumped to .geojson file {output_file}, size: {output_size} B, % of the original file: {diff}%"
+        )
+
+
+def geojson_do_mongodb(
+    import_file: Path, target_db: str, target_col: str, osm=True, tag_filter=False
+):
+    # Based on: https://github.com/rtbigdata/geojson-mongo-import.py | MIT License
+
+    client = MongoClient(uri)
+    db = client[target_db]
+    collection = db[target_col]
+
+    if not import_file.is_file():
+        logging.error(f"Finish: Import file does not exist.")
+        return None
+
+    if tag_filter is True:
+        logging.info(f"Start: Opening and filtering GeoJSON file {input_file}.")
+        geojson_file = filter_geojson(import_file)
+    else:
+        with open(import_file, "r") as f:
+            logging.info(f"Start: Opening GeoJSON file {input_file}.")
+            geojson_file = json.loads(f.read())
+
+    if target_col in db.list_collection_names():
+        logging.info(f"Start: Dropping existing collection {target_col}.")
+        collection.drop()
+
+    # create 2dsphere index and text indexes
+    logging.info("Start: Creating indexes.")
+    collection.create_index([("geometry", GEOSPHERE)])
+
+    if osm:
+        collection.create_index([("properties.type", TEXT), ("properties.id", TEXT)])
+
+    logging.info("Start: Loading features to object.")
+    bulk = collection.initialize_unordered_bulk_op()
+
+    for feature in geojson_file["features"]:
+        bulk.insert(feature)
+
+    logging.info("Finish: Features loaded to object.")
+    try:
+        logging.info(f"Start: Loading features to collection {target_col}.")
+        result = bulk.execute()
+        logging.info(
+            f'Finish: Number of Features successully inserted: {result["nInserted"]} '
+        )
+    except BulkWriteError as bwe:
+        n_inserted = bwe.details["nInserted"]
+        err_msg = bwe.details["writeErrors"]
+        logging.info("Errors encountered inserting features")
+        logging.info(f"Number of Features successully inserted: {n_inserted} ")
+        logging.info("The following errors were found:")
+        for item in err_msg:
+            print(f'Index of feature: {item["index"]}')
+            print(f'Error code: {item["code"]}')
+            logging.info(
+                f'Message(truncated due to data length): {item["errmsg"][0:120]}'
+            )
+
+
+def osm_tag_statistics(tag: str, source_db: str, col: str) -> list:
+    client = MongoClient(uri)
+    db = client[source_db]
+    features = db[col]
+
+    all_documents = features.count_documents({})
+    query_aggregate = list(
+        features.aggregate(
+            [
+                {"$match": {"keywords": {"$not": {"$size": 0}}}},
+                {"$unwind": f"$properties.tags.{tag}"},
+                {
+                    "$group": {
+                        "_id": {"$toLower": f"$properties.tags.{tag}"},
+                        "count": {"$sum": 1},
+                    }
+                },
+                {"$match": {"count": {"$gte": 2}}},
+                {"$sort": {"count": -1}},
+                {"$limit": 100},
+            ]
+        )
+    )
+    not_empty_tag = sum(elem["count"] for elem in query_aggregate)
+    empty_tag = all_documents - not_empty_tag
+    query_aggregate.append({"_id": "brak", "count": empty_tag})
+    query_aggregate.append({"_id": "suma", "count": all_documents})
+    logging.info(f"Finish: Statistics for tag: {tag} generated.")
+    return query_aggregate
+
+
+def statistics_to_html_file(tag_label: str, query_result: list, export_stats: str):
+    export_folder = Path(export_stats)
+    body = ""
+    header = f'<h2 class="is-4 is-5-touch has-text-brown has-text-weight-semibold">Tag {tag_label}</h2><div class="table-container"><table class="table">'
+    table_header = (
+        f"<thead><tr><th>{tag_label}</th><th>wystąpienia</th></tr></thead><thbody>"
+    )
+    elems = [
+        f"<tr><td>{elem['_id']}</td><td>{elem['count']}</td></tr>"
+        for elem in query_result
+    ]
+    elems_str = "".join(elems)
+    footer = "</tbody></table></div>"
+    body = header + table_header + elems_str + footer
+
+    with open(export_folder, "w", encoding="utf-8") as f:
+        f.write(body)
+
+    logging.info(f"Finish: Statistics saved to .html file: {export_folder}.")
+
+
+def export_date_to_html_file(import_date: date, export_html: str):
+    export_folder = Path(export_html)
+    paragraph = f"Ostatnia aktualizacja danych: {import_date}"
+
+    with open(export_folder, "w", encoding="utf-8") as f:
+        f.write(paragraph)
+
+    logging.info(f"Finish: Statistics saved to .html file: {export_folder}.")

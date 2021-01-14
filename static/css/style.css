@@ -1,0 +1,128 @@
+html, body
+{
+    position: absolute;
+    height: 100%;
+    width: 100vw;
+    overflow: hidden;
+}
+
+#mapid
+{
+    height: 100%;
+}
+
+.leaflet-container {
+    font: inherit !important;
+}
+
+.navbar {
+    border-bottom: 0;
+    z-index: 1000 !important;
+}
+
+.leaflet-top
+{
+ margin-top: 50px;
+}
+
+@media (min-width: 600px) {
+    .poi-card {
+        margin: .75rem !important;
+        width: 425px;
+        border-radius: 10px;
+        box-shadow: 0 0.5em 1em -0.125em rgba(10, 10, 10, 0.1), 0 0px 0 1px rgba(10, 10, 10, 0.02);
+        z-index: 801;
+        display: block !important;
+        overflow: auto !important;
+        overflow-wrap: break-word;
+        max-height: 90vh;
+    }
+}
+
+@media (max-width: 600px) {
+    .poi-card {
+        margin: 0 !important;
+        width: 100vw;
+        z-index: 801;
+        display: block !important;
+        overflow: auto !important;
+        overflow-wrap: break-word;
+        max-height: 90vh;
+    }
+}
+
+@media (max-width: 600px) {
+    .leaflet-control-layers {
+        visibility: hidden;
+    }
+}
+
+@media (max-width: 600px) {
+    #poi-card-image{
+        border: 0;
+        border-radius: 0;
+        object-fit: cover;
+    }
+}
+@media (min-width: 600px) {
+#poi-card-image {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+}
+}
+
+.poi-image, .has-background-brown, .leaflet-control-layers, .leaflet-bar a {
+    background-color: #645446 !important;
+}
+
+.close-button {
+    z-index: 9998;
+}
+
+.leaflet-container {
+    font: inherit !important;
+}
+
+.has-background-black-transparent {
+    background-color: hsla(0, 0%, 7.1%, 0.71);
+}
+
+.has-text-brown {
+    color: #645446;
+}
+
+.leaflet-control-layers, .leaflet-bar a
+{
+    color: #ebeae4 !important;
+}
+.leaflet-control-attribution
+{
+    background-color: #ffffff !important;
+    font: inherit !important;
+    font-size: 0.7rem !important; 
+    border-radius: 5px;
+}
+
+.tag-group {
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.heritage {
+    width: 30px;
+    height: 45px;
+}
+
+.contribution {
+    z-index: 9998;
+    background-color: rgba(10, 10, 10, 0.75);
+}
+.contribution a {
+    color: #ffffff !important;
+}
+
+.modal, .modal-background, .modal-card, .modal-close
+{
+   z-index: 9999 !important; 
+}
