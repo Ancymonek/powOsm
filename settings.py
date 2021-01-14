@@ -25,10 +25,9 @@ console.setLevel(logging.INFO)
 logging.getLogger("").addHandler(console)
 
 # Files and db set up
-input_file, pow_file_min, output_json_file = (
+input_file, pow_file_min = (
     Path("data/export_poland_new.json"),
-    Path("data/export_poland_min.json"),
-    Path("data/export_poland_json.json"),
+    Path("data/export_poland_min.json")
 )
 database = config("DBNAME")
 server = config("DBHOST")

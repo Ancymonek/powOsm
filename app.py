@@ -11,7 +11,6 @@ from functions import docache
 from data_import import (
     export_date_to_html_file,
     geojson_do_mongodb,
-    geojson_minify,
     osm_tag_statistics,
     overpass_to_geojson,
     statistics_to_html_file,
@@ -23,17 +22,8 @@ app = Flask(__name__)
 
 
 @app.route("/")
-def hello_world():
+def index():
     return render_template("index.html")
-
-
-@app.route("/api/geojson")
-@docache(minutes=1440, content_type="application/json")
-def geojson():
-    with open(settings.pow_file_min) as json_file:
-        data = json.load(json_file)
-
-    return json.dumps(data, separators=(",", ":"))
 
 
 @app.route("/api/feature/<filter>")
@@ -81,47 +71,6 @@ def feature(filter: str):
     features_collection = FeatureCollection(features)
 
     return json.dumps(features_collection, separators=(",", ":"))
-
-
-@app.route("/api/features/<bbox>")
-def features(bbox: str):
-    db = client[settings.database]
-    features_collection = db[settings.POW_COLLECTION]
-
-    bbox = bbox.split(",")
-    bbox = [float(x) for x in bbox]
-
-    if len(bbox) != 4:
-        return None
-
-    result_geo = features_collection.find(
-        {
-            "geometry.coordinates": {
-                "$geoWithin": {"$box": [[bbox[2], bbox[3]], [bbox[0], bbox[1]]]}
-            }
-        },
-        {"_id": False, "properties.tags": False},
-    )
-
-    features = []
-    for feature in list(result_geo):
-        feature_type = (
-            feature["properties"]["type"][0].lower()
-            + ""
-            + str(feature["properties"]["id"])
-        )
-        feature["properties"]["id"] = feature_type
-
-        lat, long = float("%.5f" % feature["geometry"]["coordinates"][0]), float(
-            "%.5f" % feature["geometry"]["coordinates"][1]
-        )
-        feature["geometry"]["coordinates"] = [lat, long]
-        del feature["properties"]["type"]
-
-        features.append(feature)
-
-    features_collection = FeatureCollection(features)
-    return features_collection
 
 
 @app.route("/stats")
@@ -189,6 +138,7 @@ def import_filename(import_key: str, force: int):
 
     force = force == 1
 
+    # 1
     execute = overpass_to_geojson(
         settings.input_file,
         3600049715,
@@ -197,19 +147,8 @@ def import_filename(import_key: str, force: int):
         force_download=force,
     )
 
-    geojson_do_mongodb(
-        settings.input_file, settings.database, settings.POW_COLLECTION, tag_filter=True
-    )
-
     if execute:
-        # 2. Reduce size of the output file
-        geojson_minify(
-            settings.input_file,
-            settings.pow_file_min,
-            filter_tag=[settings.pow_filter_values],
-        )
-
-        # 3. Geojson file to MongoDB export
+        # 2. Geojson file to MongoDB export
         geojson_do_mongodb(
             settings.input_file,
             settings.database,
@@ -232,3 +171,47 @@ def import_filename(import_key: str, force: int):
 
 if __name__ == "__main__":
     app.run(debug=settings.debug_mode)
+
+
+""" 
+# implementacja pobierania danych z api po bboxie - na przyszłość
+@app.route("/api/features/<bbox>")
+def features(bbox: str):
+    db = client[settings.database]
+    features_collection = db[settings.POW_COLLECTION]
+
+    bbox = bbox.split(",")
+    bbox = [float(x) for x in bbox]
+
+    if len(bbox) != 4:
+        return None
+
+    result_geo = features_collection.find(
+        {
+            "geometry.coordinates": {
+                "$geoWithin": {"$box": [[bbox[2], bbox[3]], [bbox[0], bbox[1]]]}
+            }
+        },
+        {"_id": False, "properties.tags": False},
+    )
+
+    features = []
+    for feature in list(result_geo):
+        feature_type = (
+            feature["properties"]["type"][0].lower()
+            + ""
+            + str(feature["properties"]["id"])
+        )
+        feature["properties"]["id"] = feature_type
+
+        lat, long = float("%.5f" % feature["geometry"]["coordinates"][0]), float(
+            "%.5f" % feature["geometry"]["coordinates"][1]
+        )
+        feature["geometry"]["coordinates"] = [lat, long]
+        del feature["properties"]["type"]
+
+        features.append(feature)
+
+    features_collection = FeatureCollection(features)
+    return features_collection
+ """

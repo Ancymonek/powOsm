@@ -117,62 +117,6 @@ def overpass_to_geojson(
                 return True
 
 
-def geojson_minify(
-    input_file: Path, output_file: Path, keep_tags: list = [], filter_tag: list = []
-):
-    if not input_file.is_file():
-        return None
-
-    with open(input_file, encoding="utf-8") as json_file:
-        input_size = input_file.stat().st_size
-        logging.info(f"Start: Opening .json file {input_file}, size: {input_size} B")
-        data = json.load(json_file)
-
-        for feature in data["features"]:
-            # simplify coordinates (works only with geojson Node geometry)
-            lat = float("%.5f" % feature["geometry"]["coordinates"][0])
-            long = float("%.5f" % feature["geometry"]["coordinates"][1])
-            feature["geometry"]["coordinates"] = [lat, long]
-
-            # trim osm id and type to single id (i.e. type = 'way', id = '298110952' to w298110952)
-            if feature["properties"]["type"] and feature["properties"]["id"]:
-                feature_type = (
-                    feature["properties"]["type"][0].lower()
-                    + ""
-                    + str(feature["properties"]["id"])
-                )
-                feature["properties"]["id"] = feature_type
-                del feature["properties"]["type"]
-
-            if len(filter_tag) == 2:
-                for key, value in list(feature["properties"]["tags"].items()):
-                    if key == filter_tag[0] and validate_input(
-                        value, filter_tag[1], ["kościoła"]
-                    ):
-                        feature["properties"]["x"] = 1
-
-            if keep_tags:
-                for key, value in list(feature["properties"]["tags"].items()):
-                    if key not in keep_tags:
-                        del feature["properties"]["tags"][key]
-            else:
-                del feature["properties"]["tags"]
-
-        logging.info(
-            f"Info: Number of features in feature collection: {len(data['features'])}"
-        )
-
-        with open(output_file, mode="w", encoding="utf-8") as f:
-            logging.info(f"Start: Dumping .geojson object to file {output_file}")
-            geojson.dump(data, f, separators=(",", ":"))
-
-        output_size = output_file.stat().st_size
-        diff = round((output_size / input_size) * 100, 3)
-        logging.info(
-            f"Finish: GeoJSON object successfully dumped to .geojson file {output_file}, size: {output_size} B, % of the original file: {diff}%"
-        )
-
-
 def geojson_do_mongodb(
     import_file: Path, target_db: str, target_col: str, osm=True, tag_filter=False
 ):
@@ -292,3 +236,51 @@ def export_date_to_html_file(import_date: date, export_html: str):
         f.write(paragraph)
 
     logging.info(f"Finish: Statistics saved to .html file: {export_folder}.")
+
+
+# Currently - not used (logic moved to API)
+def geojson_minify(input_file: Path, output_file: Path, keep_tags: list = []):
+    if not input_file.is_file():
+        return None
+
+    with open(input_file, encoding="utf-8") as json_file:
+        input_size = input_file.stat().st_size
+        logging.info(f"Start: Opening .json file {input_file}, size: {input_size} B")
+        data = json.load(json_file)
+
+        for feature in data["features"]:
+            # simplify coordinates (works only with geojson Node geometry)
+            lat = float("%.5f" % feature["geometry"]["coordinates"][0])
+            long = float("%.5f" % feature["geometry"]["coordinates"][1])
+            feature["geometry"]["coordinates"] = [lat, long]
+
+            # trim osm id and type to single id (i.e. type = 'way', id = '298110952' to w298110952)
+            if feature["properties"]["type"] and feature["properties"]["id"]:
+                feature_type = (
+                    feature["properties"]["type"][0].lower()
+                    + ""
+                    + str(feature["properties"]["id"])
+                )
+                feature["properties"]["id"] = feature_type
+                del feature["properties"]["type"]
+
+            if keep_tags:
+                for key, value in list(feature["properties"]["tags"].items()):
+                    if key not in keep_tags:
+                        del feature["properties"]["tags"][key]
+            else:
+                del feature["properties"]["tags"]
+
+        logging.info(
+            f"Info: Number of features in feature collection: {len(data['features'])}"
+        )
+
+        with open(output_file, mode="w", encoding="utf-8") as f:
+            logging.info(f"Start: Dumping .geojson object to file {output_file}")
+            geojson.dump(data, f, separators=(",", ":"))
+
+        output_size = output_file.stat().st_size
+        diff = round((output_size / input_size) * 100, 3)
+        logging.info(
+            f"Finish: GeoJSON object successfully dumped to .geojson file {output_file}, size: {output_size} B, % of the original file: {diff}%"
+        )
