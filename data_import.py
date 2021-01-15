@@ -1,20 +1,15 @@
 import json
+from builtins import FileNotFoundError
 from datetime import date, datetime
+
 import geojson
 import requests
 from osm2geojson import json2geojson
 from pymongo import GEOSPHERE, TEXT, MongoClient
 from pymongo.errors import BulkWriteError
 
-from settings import (
-    OVERPASS_ENDPOINTS,
-    Path,
-    input_file,
-    logging,
-    pow_filter_values,
-    pow_filter_short_values,
-    uri,
-)
+from settings import (OVERPASS_ENDPOINTS, Path, input_file, logging,
+                      pow_filter_short_values, pow_filter_values, uri)
 
 
 def filter_geojson(file):
@@ -66,21 +61,24 @@ def overpass_to_geojson(
     area_id: int,
     tag_name: str,
     tag_value: str,
-    out: str = "center",
-    overpass: list[str] = OVERPASS_ENDPOINTS[0],
-    force_download=False,
+    out: str = "center", # center, body
+    overpass_endpoint: list[str] = OVERPASS_ENDPOINTS[0],
+    force_download = False,
 ):
     # 1. Step - verify if file exists and wasn't created today
-    output_file_lastmod = datetime.fromtimestamp(output_file.stat().st_mtime).date()
-    today = date.today()  #
+    today = date.today()
+    
+    try:
+        output_file_lastmod = datetime.fromtimestamp(output_file.stat().st_mtime).date()
+    except FileNotFoundError:
+        output_file_lastmod = date(1900,1,1)
 
-    if (
-        output_file.is_file()
+    if (output_file.is_file()
         and output_file_lastmod == today
         and force_download is False
     ):
         logging.info(f"Finish: File is up to date. (generated: {output_file_lastmod})")
-        return False
+        return None
 
     # 2. Step 2 - connecting and getting data from Overpass
     else:
@@ -88,11 +86,12 @@ def overpass_to_geojson(
             f"Info: Export .geojson file last modification date: {output_file_lastmod}"
         )
 
+        # Overpass Query
         compact_query = f'[out:json][timeout:20005];area({area_id})->.searchArea;(node["{tag_name}"="{tag_value}"](area.searchArea);way["{tag_name}"="{tag_value}"](area.searchArea);relation["{tag_name}"="{tag_value}"](area.searchArea););out {out};'
+        query = overpass_endpoint + "?data=" + compact_query
+        logging.info(f"Start: Connecting to Overpass server: {overpass_endpoint}")
 
-        try:
-            query = overpass + "?data=" + compact_query
-            logging.info(f"Start: Connecting to Overpass server: {overpass}")
+        try:           
             response = requests.get(query)
             response.raise_for_status()
         except requests.exceptions.HTTPError as err:
@@ -238,7 +237,7 @@ def export_date_to_html_file(import_date: date, export_html: str):
     logging.info(f"Finish: Statistics saved to .html file: {export_folder}.")
 
 
-# Currently - not used (logic moved to API)
+''' Currently not used
 def geojson_minify(input_file: Path, output_file: Path, keep_tags: list = []):
     if not input_file.is_file():
         return None
@@ -284,3 +283,4 @@ def geojson_minify(input_file: Path, output_file: Path, keep_tags: list = []):
         logging.info(
             f"Finish: GeoJSON object successfully dumped to .geojson file {output_file}, size: {output_size} B, % of the original file: {diff}%"
         )
+'''
