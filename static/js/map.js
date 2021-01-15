@@ -20,8 +20,8 @@ let missingBuildingNameValueMarkers = new L.FeatureGroup();
 
 let overlayMaps = {
     "Obiekty religijne": poiMarkers,
-    "Obiekty z literówkami w nazwie (Kościoł, Kościol)": wrongNameMarkers,
-    "Obiekty ze skrótami do rozwinięcia/usunięcia (p.w., NMP, św. par., fil.) ": wrongShortnameMarkers,
+    "Obiekty z literówkami w nazwie (Kościoł, Kościol itp.)": wrongNameMarkers,
+    "Obiekty ze skrótami do rozwinięcia/usunięcia (NMP, św. par., fil.) ": wrongShortnameMarkers,
     "Obiekty bez określonego tagu 'religion'": missingReligionTagMarkers,
     "Obiekty bez określonego tagu 'denomination'": missingDenominationTagMarkers,
     "Obiekty z ogólnym tagiem budynku (building=yes)": missingBuildingNameValueMarkers,

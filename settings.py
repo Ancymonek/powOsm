@@ -112,7 +112,8 @@ pow_filter_values = (
     "nieustajacej",
     "panski",
     "wszytk",
-    "Jana Pawła 2"
+    "Jana Pawła 2",
+    "p.w."
 )
 
 pow_filter_short_values = (
@@ -120,6 +121,5 @@ pow_filter_short_values = (
     "św.",
     "bł.",
     "fil.",
-    "par.",
-    "p.w."
+    "par."
 )
