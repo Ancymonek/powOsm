@@ -159,7 +159,7 @@ function showHint(text) {
     return superScript.outerHTML;
 }
 
-function showCardFooter(url1, label1, id1, url2, label2, id2)
+function showCardFooter(url1, label1, id1, url2, label2, id2, url3, label3, id3)
 {
     let firstElem = document.createElement('a');
     firstElem.setAttribute('target', '_blank');
@@ -177,7 +177,15 @@ function showCardFooter(url1, label1, id1, url2, label2, id2)
     secondElem.setAttribute('rel', 'noreferrer');
     secondElem.innerText = label2;
 
-    return firstElem.outerHTML + secondElem.outerHTML;
+    let thirdElem = document.createElement('a');
+    thirdElem.setAttribute('target', '_blank');
+    thirdElem.setAttribute('class', 'card-footer-item');
+    thirdElem.setAttribute('id', id3);
+    thirdElem.setAttribute('href', url3);
+    thirdElem.setAttribute('rel', 'noreferrer');
+    thirdElem.innerText = label3;
+
+    return firstElem.outerHTML + secondElem.outerHTML + thirdElem.outerHTML;
 }
 
 function showNumberOfFeatures(count)
@@ -321,7 +329,7 @@ function parseOpeningHours(property) {
     }
 }
 
-function getPoiOsmUrl(action, feature) {
+function getPoiOsmUrl(action, feature, editType) {
     const osmUrl = "https://www.openstreetmap.org";
     let core;
     let featureId = feature.properties.id;
@@ -329,7 +337,7 @@ function getPoiOsmUrl(action, feature) {
     let postfix = '#map=19/' + getCoords(feature)[0] + '/' + getCoords(feature)[1];
 
     if (action == 'edit') {
-        core = "/edit?" + featureType + "=" + featureId;
+        core = "/edit?" + 'editor=' + editType + '&' + featureType + "=" + featureId;
     } else {
         core = "/" + featureType + "/" + featureId;
     }

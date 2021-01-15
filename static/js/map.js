@@ -115,7 +115,8 @@ function generateCardTemplate(id, apiFeature) {
         let moreInfoDiv = document.createElement('div');
 
         // buttons
-        let osmEditUrl = getPoiOsmUrl('edit', apiFeature);
+        let osmEditUrlId = getPoiOsmUrl('edit', apiFeature, 'id');
+        let osmEditUrlRemote = getPoiOsmUrl('edit', apiFeature, 'remote');
         let osmShowUrl = getPoiOsmUrl('details', apiFeature);
         let missingTags = [];
 
@@ -195,7 +196,7 @@ function generateCardTemplate(id, apiFeature) {
         let cardContent = (buildingDiv.outerHTML || '') + (organizationDiv.outerHTML || '') + (addressDiv.outerHTML || '') + (contactDiv.outerHTML || '') + (moreInfoDiv.outerHTML || '');
         let title = tags.name.value;
         let subtitle = religion + ' ∘ ' + denomination;
-        let footer = showCardFooter(osmShowUrl, '🔍 Pokaż w OSM', 'details', osmEditUrl, '📝 Uzupełnij dane', 'edit');
+        let footer = showCardFooter(osmShowUrl, '🔍 w OSM', 'details', osmEditUrlId, '📝 Edytuj (iD)', 'edit', osmEditUrlRemote, '🔌 Edytuj (JOSM)', 'edit');
 
         card = L.control.card(cardContent, title, subtitle, cardImage, footer, {
             position: 'topleft'
