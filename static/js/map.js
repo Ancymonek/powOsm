@@ -3,7 +3,6 @@ let activeCard = 0;
 let cardImage = 'static/img/christian_church.png';
 let card;
 let activeMarkers = [];
-const baseUrl = 'http://127.0.0.1:5000';
 const dataFile = baseUrl + '/api/feature/all';
 const filteredFile = baseUrl + '/api/feature/names';
 const apiUrl = baseUrl + '/api/items/';

@@ -10,7 +10,11 @@ OVERPASS_ENDPOINTS = [
     r"https://overpass-api.de/api/interpreter",
     r"https://overpass.kumi.systems/api/interpreter",
 ]
+CACHE_TIME = 1440
+
+# Paths
 LOG_FILE = Path("data/logs/import.log")
+input_file = Path("data/export_poland_new.json")
 
 # Logging set up
 logging.basicConfig(
@@ -24,20 +28,19 @@ console = logging.StreamHandler()
 console.setLevel(logging.INFO)
 logging.getLogger("").addHandler(console)
 
-# Files and db set up
-input_file, pow_file_min = (
-    Path("data/export_poland_new.json"),
-    Path("data/export_poland_min.json")
-)
+# DB setup
 database = config("DBNAME")
 server = config("DBHOST")
 port = config("DBPORT")
 user = urllib.parse.quote_plus(config("DBUSER"))
 password = urllib.parse.quote_plus(config("DBPASSWORD"))
 uri = "mongodb://" + user + ":" + password + "@" + server + ":" + port + "/" + database
+
+# Other
 import_key = config("IMPORT_KEY")
 debug_mode = config("DEBUG")
 
+# Dicts
 pow_filter_values = (
     "stajac",
     "świędsz",
@@ -115,7 +118,6 @@ pow_filter_values = (
     "Jana Pawła 2",
     "p.w."
 )
-
 pow_filter_short_values = (
     "NMP",
     "św.",

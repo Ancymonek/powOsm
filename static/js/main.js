@@ -3,7 +3,10 @@
 // validate ALL urls (some containc multiple values (;))
 // denomination: orthodox - different religions
 // url to card - set active marker
-
+if (!window.location.origin) {
+    window.location.origin = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port: '');
+}
+const baseUrl = window.location.origin;
 const wikimediaCommonsPrefix = 'https://commons.wikimedia.org/wiki/';
 const mapillaryImagesPrefix = 'https://images.mapillary.com/';
 

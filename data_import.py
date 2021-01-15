@@ -12,10 +12,16 @@ from settings import (OVERPASS_ENDPOINTS, Path, input_file, logging,
                       pow_filter_short_values, pow_filter_values, uri)
 
 
-def filter_geojson(file):
+def filter_osm_geojson(file):
     with open(file, encoding="utf-8") as json_file:
         data = json.load(json_file)
         for feature in data["features"]:
+            # Format coordinates
+            lat, long = float("%.5f" % feature["geometry"]["coordinates"][0]), float(
+            "%.5f" % feature["geometry"]["coordinates"][1])
+            feature["geometry"]["coordinates"] = [lat, long]
+
+            # Format other values
             for key, value in list(feature["properties"]["tags"].items()):
                 if (
                     key == "name"
@@ -41,14 +47,10 @@ def filter_geojson(file):
 
 def validate_input(input_value: str, filter_list: list, excluded_value: str):
 
-    matches = []
-
-    for word in filter_list:
-        if (
+    matches = [word for word in filter_list if (
             word.lower() in input_value.lower()
             and excluded_value not in input_value.lower()
-        ):
-            matches.append(word)
+        )]
 
     if matches:
         return True
@@ -65,26 +67,23 @@ def overpass_to_geojson(
     overpass_endpoint: list[str] = OVERPASS_ENDPOINTS[0],
     force_download = False,
 ):
-    # 1. Step - verify if file exists and wasn't created today
     today = date.today()
     
     try:
-        output_file_lastmod = datetime.fromtimestamp(output_file.stat().st_mtime).date()
+        file_last_mod_date = datetime.fromtimestamp(output_file.stat().st_mtime).date()
     except FileNotFoundError:
-        output_file_lastmod = date(1900,1,1)
+        file_last_mod_date = date(1900,1,1)
 
     if (output_file.is_file()
-        and output_file_lastmod == today
+        and file_last_mod_date == today
         and force_download is False
     ):
-        logging.info(f"Finish: File is up to date. (generated: {output_file_lastmod})")
+        logging.info(f"Finish: File is up to date. (generated: {file_last_mod_date})")
         return None
 
     # 2. Step 2 - connecting and getting data from Overpass
     else:
-        logging.info(
-            f"Info: Export .geojson file last modification date: {output_file_lastmod}"
-        )
+        logging.info(f"Info: Export .geojson file last modification date: {file_last_mod_date}")
 
         # Overpass Query
         compact_query = f'[out:json][timeout:20005];area({area_id})->.searchArea;(node["{tag_name}"="{tag_value}"](area.searchArea);way["{tag_name}"="{tag_value}"](area.searchArea);relation["{tag_name}"="{tag_value}"](area.searchArea););out {out};'
@@ -96,31 +95,27 @@ def overpass_to_geojson(
             response.raise_for_status()
         except requests.exceptions.HTTPError as err:
             raise SystemExit(err)
+        if response.status_code != 200:
+            logging.info("End: Server response other than 200")
+            return None
 
-        logging.info("Start: Getting data and extracted to .geojson object..")
-        if response.status_code == 200:
-            try:
-                geojson_response = json2geojson(response.text, log_level="INFO")
-            except:
-                geojson_response = ""
-                logging.error(
-                    "Finish: Error when converting response .json to .geojson"
-                )
+        try:
+            logging.info("Start: Getting data and extracted to .geojson object..")
+            geojson_response = json2geojson(response.text, log_level="INFO")
+        except:
+            logging.error("Finish: Error when converting response .json to .geojson")
+            return None
 
-            with open(output_file, mode="w", encoding="utf-8") as f:
-                logging.info(f"Start: Dumping .geojson object to file")
-                geojson.dump(geojson_response, f)
-                logging.info(
-                    "Finish: GeoJSON object successfully dumped to .geojson file"
-                )
-                return True
+        with open(output_file, mode="w", encoding="utf-8") as f:
+            geojson.dump(geojson_response, f)
+            logging.info("Finish: GeoJSON object successfully dumped to .geojson file")
+            return True
 
 
 def geojson_do_mongodb(
     import_file: Path, target_db: str, target_col: str, osm=True, tag_filter=False
 ):
     # Based on: https://github.com/rtbigdata/geojson-mongo-import.py | MIT License
-
     client = MongoClient(uri)
     db = client[target_db]
     collection = db[target_col]
@@ -131,7 +126,7 @@ def geojson_do_mongodb(
 
     if tag_filter is True:
         logging.info(f"Start: Opening and filtering GeoJSON file {input_file}.")
-        geojson_file = filter_geojson(import_file)
+        geojson_file = filter_osm_geojson(import_file)
     else:
         with open(import_file, "r") as f:
             logging.info(f"Start: Opening GeoJSON file {input_file}.")
@@ -201,7 +196,7 @@ def osm_tag_statistics(tag: str, source_db: str, col: str) -> list:
     not_empty_tag = sum(elem["count"] for elem in query_aggregate)
     empty_tag = all_documents - not_empty_tag
     query_aggregate.append({"_id": "brak", "count": empty_tag})
-    query_aggregate.append({"_id": "suma", "count": all_documents})
+    query_aggregate.append({"_id": "<strong>suma</strong>", "count": all_documents})
     logging.info(f"Finish: Statistics for tag: {tag} generated.")
     return query_aggregate
 
@@ -209,7 +204,7 @@ def osm_tag_statistics(tag: str, source_db: str, col: str) -> list:
 def statistics_to_html_file(tag_label: str, query_result: list, export_stats: str):
     export_folder = Path(export_stats)
     body = ""
-    header = f'<h2 class="is-4 is-5-touch has-text-brown has-text-weight-semibold">Tag {tag_label}</h2><div class="table-container"><table class="table">'
+    header = f'<h2 class="is-4 is-5-touch has-text-brown has-text-weight-semibold">Tag <strong>religion</strong></h2><div class="table-container"><table class="table">'
     table_header = (
         f"<thead><tr><th>{tag_label}</th><th>wystąpienia</th></tr></thead><thbody>"
     )

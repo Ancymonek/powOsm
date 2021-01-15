@@ -27,45 +27,24 @@ def index():
 
 
 @app.route("/api/feature/<filter>")
-@docache(minutes=1440, content_type="application/json")
+@docache(minutes=settings.CACHE_TIME, content_type="application/json")
 def feature(filter: str):
-    filter_words = [
-        re.compile(word, re.IGNORECASE) for word in settings.pow_filter_values
-    ]
     db = client[settings.database]
-    features_collection = db[settings.POW_COLLECTION]
-    ignore = [re.compile("kościoła", re.IGNORECASE)]
+    collection = db[settings.POW_COLLECTION]
 
-    # regex
-    if filter == "names":
-        result = features_collection.find(
-            {
-                "$and": [
-                    {"properties.tags.name": {"$in": filter_words}},
-                    {"properties.tags.name": {"$nin": ignore}},
-                ]
-            },
-            {"_id": False, "properties.tags": False},
-        )
-    elif filter == "all":
-        result = features_collection.find({}, {"_id": False, "properties.tags": False})
-    else:
+    if filter != 'all':
         return None
+
+    result = collection.find({}, {"_id": False, "properties.tags": False})
 
     features = []
     for feature in list(result):
         feature_type = (
-            feature["properties"]["type"][0].lower()
-            + ""
-            + str(feature["properties"]["id"])
+            feature["properties"]["type"][0].lower() + str(feature["properties"]["id"])
         )
         feature["properties"]["id"] = feature_type
-
-        lat, long = float("%.5f" % feature["geometry"]["coordinates"][0]), float(
-            "%.5f" % feature["geometry"]["coordinates"][1]
-        )
-        feature["geometry"]["coordinates"] = [lat, long]
         del feature["properties"]["type"]
+
         features.append(feature)
 
     features_collection = FeatureCollection(features)

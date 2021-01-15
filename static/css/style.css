@@ -23,6 +23,7 @@ html, body
 .leaflet-top
 {
  margin-top: 50px;
+ z-index: 1002 !important;
 }
 
 @media (min-width: 600px) {
@@ -31,11 +32,11 @@ html, body
         width: 425px;
         border-radius: 10px;
         box-shadow: 0 0.5em 1em -0.125em rgba(10, 10, 10, 0.1), 0 0px 0 1px rgba(10, 10, 10, 0.02);
-        z-index: 801;
         display: block !important;
         overflow: auto !important;
         overflow-wrap: break-word;
         max-height: 90vh;
+        z-index: 1002 !important;
     }
 }
 
@@ -43,11 +44,11 @@ html, body
     .poi-card {
         margin: 0 !important;
         width: 100vw;
-        z-index: 801;
         display: block !important;
         overflow: auto !important;
         overflow-wrap: break-word;
         max-height: 90vh;
+        z-index: 1002 !important;
     }
 }
 
