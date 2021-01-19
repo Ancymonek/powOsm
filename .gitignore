@@ -148,3 +148,4 @@ cython_debug/
 /passenger_wsgi.py
 /templates/export.html
 /templates/stats.html
+/templates/religion_stats.html

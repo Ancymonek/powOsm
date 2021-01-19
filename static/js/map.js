@@ -17,13 +17,17 @@ let missingReligionTagMarkers = new L.FeatureGroup();
 let missingDenominationTagMarkers = new L.FeatureGroup();
 let missingBuildingNameValueMarkers = new L.FeatureGroup();
 
-let overlayMaps = {
+let overlayLayers = {
     "Obiekty religijne": poiMarkers,
     "Obiekty z literówkami w nazwie (Kościoł, Kościol itp.)": wrongNameMarkers,
     "Obiekty ze skrótami do rozwinięcia/usunięcia (NMP, św. par., fil.) ": wrongShortnameMarkers,
     "Obiekty bez określonego tagu 'religion'": missingReligionTagMarkers,
     "Obiekty bez określonego tagu 'denomination'": missingDenominationTagMarkers,
     "Obiekty z ogólnym tagiem budynku (building=yes)": missingBuildingNameValueMarkers,
+};
+
+let religionLayers = {
+    "Chrześcijaństwo": poiMarkers,
 };
 
 // Permalink init
@@ -43,7 +47,8 @@ let geoUrl = dataFile + '/' + map.getBounds().toBBoxString();
 L.Permalink.setup(map);
 
 // Markers 
-L.control.layers(overlayMaps).addTo(map);
+L.control.layers(overlayLayers).addTo(map);
+L.control.layers(religionLayers).addTo(map);
 let defaultMarkerColor = '#746044'; //#51412b
 let circleMarkerStyle = {
     weight: 2,

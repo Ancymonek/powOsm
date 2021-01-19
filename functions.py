@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 from functools import wraps
+import time
+from settings import logging
 
 from flask import Response
 
@@ -20,3 +22,12 @@ def docache(minutes=1440, content_type="application/json; charset=utf-8"):
         return wrapped_f
 
     return fwrap
+
+def timeit(func):
+    @wraps(func)
+    def newfunc(*args, **kwargs):
+        startTime = time.time()
+        func(*args, **kwargs)
+        elapsedTime = time.time() - startTime
+        logging.info(func.__name__, int(elapsedTime * 1000))
+    return newfunc

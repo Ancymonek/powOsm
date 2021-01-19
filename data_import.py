@@ -204,7 +204,7 @@ def osm_tag_statistics(tag: str, source_db: str, col: str) -> list:
 def statistics_to_html_file(tag_label: str, query_result: list, export_stats: str):
     export_folder = Path(export_stats)
     body = ""
-    header = f'<h2 class="is-4 is-5-touch has-text-brown has-text-weight-semibold">Tag <strong>religion</strong></h2><div class="table-container"><table class="table">'
+    header = f'<h2 class="is-4 is-5-touch has-text-brown has-text-weight-semibold">Tag <strong>{tag_label}</strong></h2><div class="table-container"><table class="table">'
     table_header = (
         f"<thead><tr><th>{tag_label}</th><th>wystąpienia</th></tr></thead><thbody>"
     )

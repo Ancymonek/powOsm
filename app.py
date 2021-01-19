@@ -1,5 +1,4 @@
 import json
-import re
 from datetime import date
 
 from flask import Flask, render_template
@@ -7,7 +6,7 @@ from geojson import FeatureCollection
 from pymongo import MongoClient
 
 import settings
-from functions import docache
+from functions import docache, timeit
 from data_import import (
     export_date_to_html_file,
     geojson_do_mongodb,
@@ -139,7 +138,12 @@ def import_filename(import_key: str, force: int):
         statistics_to_html_file(
             "wartość",
             osm_tag_statistics("religion", settings.database, settings.POW_COLLECTION),
-            "templates/stats.html",
+            "templates/religion_stats.html",
+        )
+        statistics_to_html_file(
+            "wartość",
+            osm_tag_statistics("denomination", settings.database, settings.POW_COLLECTION),
+            "templates/denomination_stats.html",
         )
 
         # 5. Set html with last update:
