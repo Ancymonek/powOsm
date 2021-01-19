@@ -36,7 +36,7 @@ html
  z-index: 1002 !important;
 }
 
-@media (min-width: 600px) {
+@media (min-width: 769px) {
     .poi-card {
         margin: .75rem !important;
         width: 445px;
@@ -50,7 +50,7 @@ html
     }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 769px) {
     .poi-card {
         margin: 0 !important;
         width: 100vw;
@@ -62,26 +62,33 @@ html
     }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 769px) {
     .leaflet-control-layers {
         visibility: hidden;
     }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 769px) {
     #poi-card-image{
         border: 0;
         border-radius: 0;
         object-fit: cover;
     }
 }
-@media (min-width: 600px) {
+@media (min-width: 769px) {
 #poi-card-image {
     height: 100%;
     width: 100%;
     object-fit: cover;
     border-radius: 10px;
 }
+}
+@media (min-width: 769px) {
+.modal-content, .modal-card
+    {
+        width: 1000px !important;
+    }
+
 }
 
 .card-footer-item:hover {

@@ -136,16 +136,27 @@ def import_filename(import_key: str, force: int):
 
         # 4. Generate statistics of usage of some tags
         statistics_to_html_file(
-            "wartość",
+            "religion",
             osm_tag_statistics("religion", settings.database, settings.POW_COLLECTION),
             "templates/religion_stats.html",
         )
         statistics_to_html_file(
-            "wartość",
+            "denomination",
             osm_tag_statistics("denomination", settings.database, settings.POW_COLLECTION),
             "templates/denomination_stats.html",
         )
 
+        statistics_to_html_file(
+            "church:type",
+            osm_tag_statistics("church:type", settings.database, settings.POW_COLLECTION),
+            "templates/churchtype_stats.html",
+        )
+
+        statistics_to_html_file(
+            "building",
+            osm_tag_statistics("building", settings.database, settings.POW_COLLECTION),
+            "templates/building_stats.html",
+        )
         # 5. Set html with last update:
         export_date_to_html_file(date.today(), "templates/export.html")
 

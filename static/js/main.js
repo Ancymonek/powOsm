@@ -191,7 +191,7 @@ function showCardFooter(url1, label1, id1, url2, label2, id2, url3, label3, id3)
 function showNumberOfFeatures(count)
 {
     let countDiv = document.getElementById('featuresCount');
-    countDiv.textContent = 'Elementy na mapie: ' + count + ' ∘ ';
+    countDiv.textContent = 'Obiekty na mapie: ' + count + ' ∘ ';
     return countDiv.outerHTML;
 }
 
