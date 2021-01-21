@@ -1,18 +1,14 @@
 # powOsm
 
-Pobieranie obiektów z bazy OpenStreetMap do bazy MongoDB za pośrednictwem Overpassa i prezentacja przy użyciu Flaska. Na przykładzie obiektów religijnych (amenity = 'place_of_worship').
+Pobieranie obiektów z bazy OpenStreetMap do bazy MongoDB za pośrednictwem Overpassa i prezentacja przy użyciu Flaska. Na przykładzie obiektów religijnych (amenity = 'place_of_worship'), po odpowiednich zmianach można dostosować do innych obiektów.
 
+Wersja online: https://plname.usermd.net/
 
 Backend: Flask
-
 Baza danych: MongoDB
-
 Framework CSS: Bulma
-
 Mapa - Leaflet.js
-
-Wersja Pythona: 3.9.1.
-
+Python: 3.9.1.
 
 Developement przy użyciu VSCode.
 
