@@ -49,7 +49,7 @@ L.Permalink.setup(map);
 
 // Markers 
 L.control.layers(false, overlayLayers).addTo(map);
-//L.control.layers(religionLayers).addTo(map);
+
 let defaultMarkerColor = '#746044'; //#51412b
 let circleMarkerStyle = {
     weight: 2,
@@ -109,7 +109,7 @@ map.on('zoomend', function () {
     let currentZoom = map.getZoom();
 
     poiMarkers.setStyle(setZoomStyle(currentZoom));
-    wrongNameMarkers.setStyle(setZoomStyle(currentZoom));
+    //wrongNameMarkers.setStyle(setZoomStyle(currentZoom));
 
 });
 
@@ -173,8 +173,7 @@ function generateCardTemplate(id, apiFeature) {
 
         organizationDiv.innerHTML = showTag('churchType') + showTag('operator') + showTag('diocese') + showTag('deanery') + showTag('serviceTimes') + showTag('openingHours');
 
-        addressDiv.innerHTML = `${showSectionHeader('adres')}
-        <p class="mb-1 ml-2">${tags.street.value} ${tags.houseNumber.value}, ${tags.postCode.value} ${tags.city.value || tags.place.value }</p>`;
+        addressDiv.innerHTML = `${showSectionHeader('adres')}<p class="mb-1 ml-2">${tags.street.value} ${tags.houseNumber.value}, ${tags.postCode.value} ${tags.city.value || tags.place.value }</p>`;
 
         contactDiv.innerHTML = showUrlTag('website', tags.website.value, 'witryna') + showTag('email') + showTag('phone');
 

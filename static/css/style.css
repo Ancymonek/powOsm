@@ -161,6 +161,7 @@ html {
 }
 
 .contribution {
+    max-width: 300px;
     z-index: 9998;
     background-color: rgba(10, 10, 10, 0.75);
 }

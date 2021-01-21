@@ -86,6 +86,11 @@ function showContribution(contributionInfo) {
             let licensePart;
             let separator = ' | ';
             let author = contributionInfo.author;
+            let authorPart = document.createElement('span');
+            authorPart.setAttribute('style', 'contribution-author');
+            authorPart.innerHTML = author;
+            authorText = authorPart.textContent || authorPart.innerText || "";
+
             let license = contributionInfo.license;
             let licenseUrl = contributionInfo.licenseUrl;
 
@@ -94,11 +99,15 @@ function showContribution(contributionInfo) {
             } else {
                 licensePart = license;
             }
-            if (author.startsWith('No machine-readable')) {
-                author = '<sup>?</sup>';
+            if (authorText.startsWith('No machine-readable')) {
+                authorText = '<sup>?</sup>';
+            }
+            else if (authorText.includes('This photo was taken by Przemysław Jahr'))
+            {
+                authorText = 'Przemysław Jahr';
             }
 
-            contributionDiv.innerHTML = author + (separator || '') + licensePart;
+            contributionDiv.innerHTML = authorText + (separator || '') + licensePart;
             contributionDiv.classList.remove("is-hidden");
         }
 
@@ -382,6 +391,7 @@ function getWikimediaCommonsLicenseInfo(filename) {
             .then(response => response.json())
             .then(json => {
                 if (json) {
+                    console.log(json);
                     author = json.query.pages[-1].imageinfo[0].extmetadata.Artist.value;
                     license = json.query.pages[-1].imageinfo[0].extmetadata.LicenseShortName.value;
                     if (license == 'Public domain') {
