@@ -149,3 +149,6 @@ cython_debug/
 /templates/export.html
 /templates/stats.html
 /templates/religion_stats.html
+/templates/denomination_stats.html
+/templates/churchtype_stats.html
+/templates/building_stats.html
