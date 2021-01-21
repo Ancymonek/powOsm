@@ -4,7 +4,7 @@
 // denomination: orthodox - different religions
 // url to card - set active marker
 if (!window.location.origin) {
-    window.location.origin = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port: '');
+    window.location.origin = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port : '');
 }
 const baseUrl = window.location.origin;
 const wikimediaCommonsPrefix = 'https://commons.wikimedia.org/wiki/';
@@ -159,8 +159,7 @@ function showHint(text) {
     return superScript.outerHTML;
 }
 
-function showCardFooter(url1, label1, id1, url2, label2, id2, url3, label3, id3)
-{
+function showCardFooter(url1, label1, id1, url2, label2, id2, url3, label3, id3) {
     let firstElem = document.createElement('a');
     firstElem.setAttribute('target', '_blank');
     firstElem.setAttribute('class', 'card-footer-item');
@@ -188,8 +187,7 @@ function showCardFooter(url1, label1, id1, url2, label2, id2, url3, label3, id3)
     return firstElem.outerHTML + secondElem.outerHTML + thirdElem.outerHTML;
 }
 
-function showNumberOfFeatures(count)
-{
+function showNumberOfFeatures(count) {
     let countDiv = document.getElementById('featuresCount');
     countDiv.textContent = 'Obiekty na mapie: ' + count + ' ∘ ';
     return countDiv.outerHTML;
@@ -345,24 +343,35 @@ function getPoiOsmUrl(action, feature, editType) {
 }
 
 function markerFilter(feature, layer) {
+    category = [];
     if (feature.properties.n == 1) {
-        return layer.addTo(wrongNameMarkers);
-    } 
+        category.push(layer)
+        layer.addTo(wrongNameMarkers);
+    }
 
     if (feature.properties.n == 2) {
-        return layer.addTo(wrongShortnameMarkers);
-    } 
-    
-    if (feature.properties.r == 1) {
-        return layer.addTo(missingReligionTagMarkers);
+        category.push(layer)
+        layer.addTo(wrongShortnameMarkers);
     }
-    
+
+    if (feature.properties.r == 1) {
+        category.push(layer)
+        layer.addTo(missingReligionTagMarkers);
+    }
+
     if (feature.properties.d == 1) {
-        return layer.addTo(missingDenominationTagMarkers);
+        category.push(layer)
+        layer.addTo(missingDenominationTagMarkers);
     }
 
     if (feature.properties.b == 1) {
-        return layer.addTo(missingBuildingNameValueMarkers);
+        category.push(layer)
+        layer.addTo(missingBuildingNameValueMarkers);
+    }
+
+    if (category.length == 0)
+    {
+        return false;
     }
 }
 
@@ -471,13 +480,13 @@ function getWikidataImg(property) {
 function parseImageTag(imageUrl) {
     let cardNewImage = '';
     imageUrl = imageUrl.replace('http://', 'https://');
-    
+
     // Wikimedia
     if (imageUrl.startsWith(wikimediaCommonsPrefix) || imageUrl.startsWith("File:")) {
         let shortFileName = imageUrl.replace(wikimediaCommonsPrefix, '').split(':'); // removes ['File', 'Plik' etc]
         let decodedFileName = decodeURIComponent(shortFileName[1]);
         let fullWikimediaUrl = getWikimediaCommonsUrl(decodedFileName);
-        
+
         getWikimediaCommonsLicenseInfo(decodedFileName);
         cardNewImage = fullWikimediaUrl;
         return cardNewImage;

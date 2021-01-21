@@ -152,3 +152,7 @@ html
 {
    z-index: 9999 !important; 
 }
+.leaflet-control-layers-toggle
+{
+    background-image: url(../img/logo.png) !important;
+}

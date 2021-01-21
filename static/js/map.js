@@ -26,6 +26,7 @@ let overlayLayers = {
     "Obiekty z ogólnym tagiem budynku (building=yes)": missingBuildingNameValueMarkers,
 };
 
+
 let religionLayers = {
     "Chrześcijaństwo": poiMarkers,
 };
@@ -47,8 +48,8 @@ let geoUrl = dataFile + '/' + map.getBounds().toBBoxString();
 L.Permalink.setup(map);
 
 // Markers 
-L.control.layers(overlayLayers).addTo(map);
-L.control.layers(religionLayers).addTo(map);
+L.control.layers(false, overlayLayers).addTo(map);
+//L.control.layers(religionLayers).addTo(map);
 let defaultMarkerColor = '#746044'; //#51412b
 let circleMarkerStyle = {
     weight: 2,
@@ -89,7 +90,20 @@ L.control.zoom({
     position: 'bottomright'
 }).addTo(map);
 
+document.addEventListener("DOMContentLoaded", function (event) {
+    var selector = document.querySelectorAll('input[type=checkbox]');
 
+    for (i = 0; i < selector.length; i++) {
+        selector[i].addEventListener('change', function (event) {
+            if (this.checked && selector[0] != this) {
+                setTimeout(function() {             
+                selector.checked = false;
+                }, 250);
+            }   
+                    // do something if checked
+        });
+    }
+});
 
 map.on('zoomend', function () {
     let currentZoom = map.getZoom();
@@ -239,6 +253,7 @@ function getFeatureInfo(feature, urlId) {
 
 // Show info about map features
 function onEachFeature(feature, layer) {
+    
     markerFilter(feature, layer);
     layer.on('click',
         function (e) {
@@ -295,3 +310,4 @@ if (activeCard == 0 && getFeatureIdFromHash(window.location.href) != null) {
     let id = getFeatureIdFromHash(window.location.href);
     getFeatureInfo('', id);
 }
+
