@@ -345,34 +345,25 @@ function getPoiOsmUrl(action, feature, editType) {
 function markerFilter(feature, layer) {
     category = [];
     if (feature.properties.n == 1) {
-        category.push(layer)
         layer.addTo(wrongNameMarkers);
     }
 
     if (feature.properties.n == 2) {
-        category.push(layer)
         layer.addTo(wrongShortnameMarkers);
     }
 
     if (feature.properties.r == 1) {
-        category.push(layer)
         layer.addTo(missingReligionTagMarkers);
     }
 
     if (feature.properties.d == 1) {
-        category.push(layer)
         layer.addTo(missingDenominationTagMarkers);
     }
 
     if (feature.properties.b == 1) {
-        category.push(layer)
         layer.addTo(missingBuildingNameValueMarkers);
     }
 
-    if (category.length == 0)
-    {
-        return false;
-    }
 }
 
 //#endregion Values processing

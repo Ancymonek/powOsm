@@ -1,23 +1,37 @@
-html, body
-{
+html,
+body {
     position: absolute;
     height: 100%;
     width: 100vw;
     overflow: hidden;
 }
-body 
-{
+
+body {
     min-height: 100vh;
     min-height: -webkit-fill-available;
 }
 
-html
-{
+html {
     height: -webkit-fill-available;
 }
 
-#mapid
+.logo {
+    background-color: #FFFFFF;
+    width: 25px;
+    height: 25px;
+    vertical-align: bottom;
+    border: 1px solid rgb(206, 205, 205);
+    border-radius: 2px;
+}
+
+.logo-svg
 {
+    fill:#645446;
+    fill-opacity:1;
+    stroke:none
+}
+
+#mapid {
     height: 100%;
 }
 
@@ -30,15 +44,14 @@ html
     z-index: 1000 !important;
 }
 
-.leaflet-top
-{
- margin-top: 50px;
- z-index: 1002 !important;
+.leaflet-top {
+    margin-top: 50px;
+    z-index: 1002 !important;
 }
 
 @media (min-width: 769px) {
     .poi-card {
-        margin: .75rem !important;
+        margin: 1rem !important;
         width: 445px;
         border-radius: 10px;
         box-shadow: 0 0.5em 1em -0.125em rgba(10, 10, 10, 0.1), 0 0px 0 1px rgba(10, 10, 10, 0.02);
@@ -69,23 +82,26 @@ html
 }
 
 @media (max-width: 769px) {
-    #poi-card-image{
+    #poi-card-image {
         border: 0;
         border-radius: 0;
         object-fit: cover;
     }
 }
+
 @media (min-width: 769px) {
-#poi-card-image {
-    height: 100%;
-    width: 100%;
-    object-fit: cover;
-    border-radius: 10px;
+    #poi-card-image {
+        height: 100%;
+        width: 100%;
+        object-fit: cover;
+        border-radius: 10px;
+    }
 }
-}
+
 @media (min-width: 769px) {
-.modal-content, .modal-card
-    {
+
+    .modal-content,
+    .modal-card {
         width: 1000px !important;
     }
 
@@ -99,7 +115,10 @@ html
     box-shadow: inset 0 0 5px #dcdcdc;
 }
 
-.poi-image, .has-background-brown, .leaflet-control-layers, .leaflet-bar a {
+.poi-image,
+.has-background-brown,
+.leaflet-control-layers,
+.leaflet-bar a {
     background-color: #645446 !important;
 }
 
@@ -119,15 +138,15 @@ html
     color: #645446;
 }
 
-.leaflet-control-layers, .leaflet-bar a
-{
+.leaflet-control-layers,
+.leaflet-bar a {
     color: #ebeae4 !important;
 }
-.leaflet-control-attribution
-{
-    background-color: #ffffff !important;
+
+.leaflet-control-attribution {
+    background-color: #ffffff91 !important;
     font: inherit !important;
-    font-size: 0.7rem !important; 
+    font-size: 0.7rem !important;
     border-radius: 5px;
 }
 
@@ -136,6 +155,7 @@ html
 }
 
 .heritage {
+    margin-top:-20px !important;
     width: 30px;
     height: 45px;
 }
@@ -144,15 +164,14 @@ html
     z-index: 9998;
     background-color: rgba(10, 10, 10, 0.75);
 }
+
 .contribution a {
     color: #ffffff !important;
 }
 
-.modal, .modal-background, .modal-card, .modal-close
-{
-   z-index: 9999 !important; 
-}
-.leaflet-control-layers-toggle
-{
-    background-image: url(../img/logo.png) !important;
+.modal,
+.modal-background,
+.modal-card,
+.modal-close {
+    z-index: 9999 !important;
 }

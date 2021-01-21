@@ -96,11 +96,11 @@ document.addEventListener("DOMContentLoaded", function (event) {
     for (i = 0; i < selector.length; i++) {
         selector[i].addEventListener('change', function (event) {
             if (this.checked && selector[0] != this) {
-                setTimeout(function() {             
-                selector.checked = false;
+                setTimeout(function () {
+                    selector.checked = false;
                 }, 250);
-            }   
-                    // do something if checked
+            }
+            // do something if checked
         });
     }
 });
@@ -139,10 +139,14 @@ function generateCardTemplate(id, apiFeature) {
         let osmShowUrl = getPoiOsmUrl('details', apiFeature);
         let missingTags = [];
 
-        if (tags.heritage.value) {
-            heritageSign =
-                '<a href="#"><img src="static/img/zabytek.png" title="' + tags.heritageRef.value +
-                '" alt="Zabytek - symbol" class="is-pulled-right m-3 heritage"></a>';
+        if (tags.heritage.value && tags.heritageRef.value) {
+            let anchorImg = document.createElement('a');
+            let heritageImg = new Image();
+            heritageImg.src = "static/img/zabytek.png";
+            heritageImg.setAttribute('class', "is-pulled-right m-2 heritage");
+            heritageImg.setAttribute('title', tags.heritageRef.value);
+            anchorImg.innerHTML = heritageImg.outerHTML;
+            heritageSign = anchorImg.outerHTML;
         } else {
             heritageSign = '';
         }
@@ -253,7 +257,7 @@ function getFeatureInfo(feature, urlId) {
 
 // Show info about map features
 function onEachFeature(feature, layer) {
-    
+
     markerFilter(feature, layer);
     layer.on('click',
         function (e) {
@@ -310,4 +314,3 @@ if (activeCard == 0 && getFeatureIdFromHash(window.location.href) != null) {
     let id = getFeatureIdFromHash(window.location.href);
     getFeatureInfo('', id);
 }
-
