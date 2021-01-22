@@ -99,12 +99,12 @@ function showContribution(contributionInfo) {
             } else {
                 licensePart = license;
             }
-            if (authorText.startsWith('No machine-readable')) {
-                authorText = '<sup>?</sup>';
-            }
-            else if (authorText.includes('This photo was taken by Przemysław Jahr'))
-            {
-                authorText = 'Przemysław Jahr';
+
+            if (authorText.length > 25) {
+                let anchor = document.createElement('a');
+                anchor.setAttribute('title', authorText);
+                anchor.textContent = '[?]';
+                authorText = anchor.outerHTML;
             }
 
             contributionDiv.innerHTML = authorText + (separator || '') + licensePart;
@@ -373,6 +373,10 @@ function markerFilter(feature, layer) {
         layer.addTo(missingBuildingNameValueMarkers);
     }
 
+    if (feature.properties.o == 0 || feature.properties.o == 1) {
+        layer.addTo(wrongServiceHoursValueMarkers);
+    }
+
 }
 
 //#endregion Values processing
@@ -499,7 +503,7 @@ function parseImageTag(imageUrl) {
         let contributionInfo = {
             'author': '<a href="' + imageUrl + '" target="_blank" rel="noreferrer">Mapillary</a>',
             'license': 'CC BY-SA 4.0',
-            'licenseUrl': 'https://creativecommons.org/licenses/by-sa/4.0/' //licenseUrl  || 
+            'licenseUrl': 'https://creativecommons.org/licenses/by-sa/4.0/' 
         };
         showContribution(contributionInfo);
         let newUrl = imageUrl.replace('thumb-2048', 'thumb-' + targetImageSize).replace('thumb-1024', 'thumb-' + targetImageSize);

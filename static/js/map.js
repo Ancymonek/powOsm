@@ -16,6 +16,7 @@ let wrongShortnameMarkers = new L.FeatureGroup();
 let missingReligionTagMarkers = new L.FeatureGroup();
 let missingDenominationTagMarkers = new L.FeatureGroup();
 let missingBuildingNameValueMarkers = new L.FeatureGroup();
+let wrongServiceHoursValueMarkers = new L.FeatureGroup();
 
 let overlayLayers = {
     "Obiekty religijne": poiMarkers,
@@ -24,6 +25,7 @@ let overlayLayers = {
     "Obiekty bez określonego tagu 'religion'": missingReligionTagMarkers,
     "Obiekty bez określonego tagu 'denomination'": missingDenominationTagMarkers,
     "Obiekty z ogólnym tagiem budynku (building=yes)": missingBuildingNameValueMarkers,
+    "Obiekty z błędnymi tagami service_times i opening_hours": wrongServiceHoursValueMarkers
 };
 
 
@@ -109,8 +111,6 @@ map.on('zoomend', function () {
     let currentZoom = map.getZoom();
 
     poiMarkers.setStyle(setZoomStyle(currentZoom));
-    //wrongNameMarkers.setStyle(setZoomStyle(currentZoom));
-
 });
 
 map.on('moveend', function () {
@@ -150,7 +150,11 @@ function generateCardTemplate(id, apiFeature) {
         } else {
             heritageSign = '';
         }
-        // Order: 1. 'Image' 2. Wikidata main image (api request + img request), 3. Wikipedia main image (if exists), 4. Future (other images)
+        
+        // Order: 
+        // 1. 'Image' tag (works for Wikimedia Commons url and valid 'File:XXXX.jpg' format, and Mapillary) - synchronous
+        // 2. Wikidata main image (api request + img request) - asynchronous,
+        // To do: 1. Wikimedia Commons category parse and get first image, 2. Get image if only Wikipedia article is provided (it's not so easy*)
 
         if (tags.image.value) {
             cardImage = parseImageTag(tags.image.value);

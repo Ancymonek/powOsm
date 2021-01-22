@@ -15,13 +15,16 @@ from settings import (
     logging,
     pow_filter_short_values,
     pow_filter_values,
+    hours_filter_values,
     uri,
 )
 
 
 def filter_osm_geojson(file):
+    # keep new geojson properties short to keep .geojson file small
     with open(file, encoding="utf-8") as json_file:
         data = json.load(json_file)
+
         for feature in data["features"]:
             # Format coordinates
             lat, long = float("%.5f" % feature["geometry"]["coordinates"][0]), float(
@@ -50,6 +53,13 @@ def filter_osm_geojson(file):
 
                 if key == "building" and value == "yes":
                     feature["properties"]["b"] = 1
+
+                # It's hard to find working Python opening_hours parser so it's a validator based on manually checked incorrect values, should contain about 80% cases
+                if key in ["opening_hours", "service_times"] and validate_input(
+                    value, hours_filter_values, "kościoła"
+                ):
+                    feature["properties"]["o"] = 0
+
     return data
 
 

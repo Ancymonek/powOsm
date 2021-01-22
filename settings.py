@@ -125,3 +125,4 @@ pow_filter_short_values = (
     "fil.",
     "par."
 )
+hours_filter_values = ('niedziela', 'lub', 'miesi�ca', '�wi�ta', 'Dni', 'święta', 'miesiąca', 'http', 'www', 'dzia�a', 'działa', 'św', '�w', 'powszednie', 'service_times', 'pn', 'pt', 'śr', 'wt', 'czw', 'sob', '�r', 'nd')

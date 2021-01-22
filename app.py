@@ -31,15 +31,15 @@ def feature(filter: str):
     db = client[settings.database]
     collection = db[settings.POW_COLLECTION]
 
-    if filter != 'all':
+    if filter != "all":
         return None
 
     result = collection.find({}, {"_id": False, "properties.tags": False})
 
     features = []
     for feature in list(result):
-        feature_type = (
-            feature["properties"]["type"][0].lower() + str(feature["properties"]["id"])
+        feature_type = feature["properties"]["type"][0].lower() + str(
+            feature["properties"]["id"]
         )
         feature["properties"]["id"] = feature_type
         del feature["properties"]["type"]
@@ -49,38 +49,6 @@ def feature(filter: str):
     features_collection = FeatureCollection(features)
 
     return json.dumps(features_collection, separators=(",", ":"))
-
-
-@app.route("/stats")
-def stats():
-    db = client[settings.database]
-    features_collection = db[settings.POW_COLLECTION]
-
-    # Counting all objects
-    all_documents = features_collection.count_documents({})
-    religions = list(
-        features_collection.aggregate(
-            [
-                {"$match": {"keywords": {"$not": {"$size": 0}}}},
-                {"$unwind": "$properties.tags.religion"},
-                {
-                    "$group": {
-                        "_id": {"$toLower": "$properties.tags.religion"},
-                        "count": {"$sum": 1},
-                    }
-                },
-                {"$match": {"count": {"$gte": 2}}},
-                {"$sort": {"count": -1}},
-                {"$limit": 100},
-            ]
-        )
-    )
-    not_empty_tag = sum(elem["count"] for elem in religions)
-    empty_tag = all_documents - not_empty_tag
-    religions.append({"_id": "all_docs", "count": all_documents})
-    religions.append({"_id": "empty", "count": empty_tag})
-
-    return religions
 
 
 @app.route("/api/items/<item_id>")
@@ -142,13 +110,17 @@ def import_filename(import_key: str, force: int):
         )
         statistics_to_html_file(
             "denomination",
-            osm_tag_statistics("denomination", settings.database, settings.POW_COLLECTION),
+            osm_tag_statistics(
+                "denomination", settings.database, settings.POW_COLLECTION
+            ),
             "templates/denomination_stats.html",
         )
 
         statistics_to_html_file(
             "church:type",
-            osm_tag_statistics("church:type", settings.database, settings.POW_COLLECTION),
+            osm_tag_statistics(
+                "church:type", settings.database, settings.POW_COLLECTION
+            ),
             "templates/churchtype_stats.html",
         )
 
