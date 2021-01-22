@@ -4,16 +4,21 @@ Pobieranie obiektów z bazy OpenStreetMap do bazy MongoDB za pośrednictwem Over
 
 Wersja online: https://plname.usermd.net/
 
-Backend: Flask
-Baza danych: MongoDB
-Framework CSS: Bulma
-Mapa - Leaflet.js
-Python: 3.9.1.
+Stack: 
+
+* Backend: Flask
+* Baza danych: MongoDB
+* Framework CSS: Bulma
+* Mapa - Leaflet.js
+* Python: 3.9.1
 
 Developement przy użyciu VSCode.
 
 
 Aby uruchomić należy:
-- do katalogu root dodać plik .ENV ze zmiennymi (DEBUG = True/False, DBNAME, DBUSER, DBPASSWORD, DBHOST, DBPORT, IMPORT_KEY (używany do zdalnego uruchamiania skryptu aktualizacyjnego)
-- pobrać brakujące paczki node (/static/package-lock.json)
-- zainstalować wszystkie pakiety z requirements.txt.
+1. do katalogu root dodać plik .ENV ze zmiennymi (DEBUG = True/False, DBNAME, DBUSER, DBPASSWORD, DBHOST, DBPORT, IMPORT_KEY (używany do zdalnego uruchamiania skryptu aktualizacyjnego)
+1. pobrać brakujące paczki node (/static/package-lock.json)
+1. zainstalować wszystkie pakiety z requirements.txt.
+
+
+Zapraszam do rozwoju projektu poprzez pull requesty/zgłaszanie błędów w zakładce Issues.

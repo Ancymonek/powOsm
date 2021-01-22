@@ -1,8 +1,6 @@
 // TO DO:
 // parse multivalues (url)
-// validate ALL urls (some containc multiple values (;))
-// denomination: orthodox - different religions
-// url to card - set active marker
+// validate ALL urls (some may contain multiple values (;))
 if (!window.location.origin) {
     window.location.origin = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port : '');
 }
