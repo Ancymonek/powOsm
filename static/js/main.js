@@ -6,6 +6,7 @@ if (!window.location.origin) {
 }
 const baseUrl = window.location.origin;
 const wikimediaCommonsPrefix = 'https://commons.wikimedia.org/wiki/';
+const wikimediaCommonsShortPrefix = 'File:';
 const mapillaryImagesPrefix = 'https://images.mapillary.com/';
 
 //#region DOM functions
@@ -424,22 +425,16 @@ function getWikimediaCommonsLicenseInfo(filename) {
 function getWikimediaCommonsUrl(imgName) {
     if (imgName) {
         imgName = imgName.split(' ').join('_');
+        let WikimediaUrlBase = 'https://upload.wikimedia.org/wikipedia/commons/thumb';
         let size = 350;
-        let urlBase = 'https://upload.wikimedia.org/wikipedia/commons/thumb';
         let md5_part = md5(imgName).toString();
         let firstPart = "/" + md5_part[0];
         let secondPart = "/" + md5_part.slice(0, 2);
         let thirdPart = "/" + imgName;
         let fourthPart = '/' + size + 'px-' + imgName;
-        let fullUrl = urlBase + firstPart + secondPart + thirdPart + fourthPart;
-        console.log('DZIAŁA:' + fullUrl);
+        let fullUrl = WikimediaUrlBase + firstPart + secondPart + thirdPart + fourthPart;
         return fullUrl;
     }
-}
-
-function getWikimediaCommonsImg(property) {
-    return 'https://commons.wikimedia.org/w/api.php?action=query&prop=imageinfo&iiprop=url&iiurlwidth=240&format=json' +
-        '&titles=' + encodeURIComponent(property);
 }
 
 function getWikipediaUrl(property) {
@@ -485,28 +480,15 @@ function parseImageTag(imageUrl) {
     imageUrl = imageUrl.replace('http://', 'https://');
 
     // Wikimedia
-    if (imageUrl.startsWith(wikimediaCommonsPrefix) || imageUrl.startsWith("File:")) {
+    if (imageUrl.startsWith(wikimediaCommonsPrefix) || imageUrl.startsWith(wikimediaCommonsShortPrefix)) {
         let shortFileName = imageUrl.replace(wikimediaCommonsPrefix, '').split(':'); // removes ['File', 'Plik' etc]
-        let decodedFileName = decodeURIComponent(shortFileName[1]);
-        let fullWikimediaUrl = getWikimediaCommonsUrl(decodedFileName);
-
-        getWikimediaCommonsLicenseInfo(decodedFileName);
-        cardNewImage = fullWikimediaUrl;
+        cardNewImage = decodeURIComponent(shortFileName[1]);
         return cardNewImage;
     }
-
     //Mapillary (direct url)
     else if (imageUrl.startsWith(mapillaryImagesPrefix)) {
         let targetImageSize = 640;
-        let contributionInfo = {
-            'author': '<a href="' + imageUrl + '" target="_blank" rel="noreferrer">Mapillary</a>',
-            'license': 'CC BY-SA 4.0',
-            'licenseUrl': 'https://creativecommons.org/licenses/by-sa/4.0/' 
-        };
-        showContribution(contributionInfo);
-        let newUrl = imageUrl.replace('thumb-2048', 'thumb-' + targetImageSize).replace('thumb-1024', 'thumb-' + targetImageSize);
-
-        cardNewImage = newUrl;
+        let cardNewImage = imageUrl.replace('thumb-2048', 'thumb-' + targetImageSize).replace('thumb-1024', 'thumb-' + targetImageSize);
         return cardNewImage;
     } else {
         return undefined;

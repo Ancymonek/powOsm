@@ -122,8 +122,7 @@ map.on('moveend', function () {
 
 function generateCardTemplate(id, apiFeature) {
     if (apiFeature && id.substring(1) == apiFeature.properties.id) {
-
-        let heritageSign, buildingSuperscript;
+        let heritageSign, buildingSuperscript, headerImage;
         tags = featureTags(apiFeature);
 
         // card sections
@@ -150,20 +149,42 @@ function generateCardTemplate(id, apiFeature) {
         } else {
             heritageSign = '';
         }
-        
+
         // Order: 
         // 1. 'Image' tag (works for Wikimedia Commons url and valid 'File:XXXX.jpg' format, and Mapillary) - synchronous
         // 2. Wikidata main image (api request + img request) - asynchronous,
         // To do: 1. Wikimedia Commons category parse and get first image, 2. Get image if only Wikipedia article is provided (it's not so easy*)
 
-        if (tags.image.value) {
-            cardImage = parseImageTag(tags.image.value);
-        } else if (tags.wikidata.value) {
+        if (tags.image.value && (tags.image.value.startsWith(mapillaryImagesPrefix) || tags.image.value.startsWith(wikimediaCommonsPrefix) || tags.image.value.startsWith(wikimediaCommonsShortPrefix)) ) 
+        {
+            let image = tags.image.value;
+            if (image.startsWith(mapillaryImagesPrefix))
+            {
+                headerImage = parseImageTag(image);
+                let contributionInfo = {
+                    'author': '<a href="' + image + '" target="_blank" rel="noreferrer">Mapillary</a>',
+                    'license': 'CC BY-SA 4.0',
+                    'licenseUrl': 'https://creativecommons.org/licenses/by-sa/4.0/' 
+                };
+                showContribution(contributionInfo);
+            }
+            else if (image.startsWith(wikimediaCommonsPrefix) || image.startsWith(wikimediaCommonsShortPrefix)) {
+                let imageDecodedName = parseImageTag(image)
+                let fullWikimediaUrl = getWikimediaCommonsUrl(imageDecodedName);
+                getWikimediaCommonsLicenseInfo(imageDecodedName);
+                headerImage = fullWikimediaUrl;
+            }
+        }
+        else if (tags.wikidata.value) {
             getWikidataImg(tags.wikidata.value);
-        } else {
-            cardImage = 'static/img/christian_church.png';
+        } 
+        else {
+            headerImage = cardImage;
             contribution = 'is-invisible';
         }
+
+
+
         if (apiFeature.properties.tags.building == 'yes') {
             buildingSuperscript = showHint('Wartość tagu jest zbyt ogólna, uzupełnij go odpowiednią wartością (np. dla kościoła building=church, dla kaplicy - building=chapel'); //' <sup>[ <a title="Wartość tagu jest zbyt ogólna, uzupełnij go odpowiednią wartością (np. dla kościoła building=church, dla kaplicy - building=chapel).">?</a> ]</sup>';
         }
@@ -185,7 +206,7 @@ function generateCardTemplate(id, apiFeature) {
             showUrlTag('mapillary', tags.mapillary.value, 'zdjęcie') + showUrlTag('url', tags.url.value, 'witryna') +
             showTag('description') + showTag('wheelchair', '', ' <sup>♿</sup>');
 
-        // Setting visibility of particular sections
+        // Setting visibility of particular sections - refactoring needed
         if (!tags.building.value) {} else {
             buildingDiv.innerHTML = showSectionHeader('budynek') + buildingDiv.innerHTML;
         }
@@ -213,7 +234,7 @@ function generateCardTemplate(id, apiFeature) {
         let religion = (tags.religion.value || showHint('Brak tagu określającego religię (np. religion = roman_catholic) - uzupełnij'));
         let denomination = (tags.denomination.value || showHint('Brak tagu określającego wyznanie religijne - np. denomination = roman_cat'));
 
-        // Fix
+        // Fix - to refactor
         if (religion == 'judaizm' && denomination == 'prawosławie') {
             denomination = 'ortodoksyjny';
         }
@@ -224,7 +245,7 @@ function generateCardTemplate(id, apiFeature) {
         let subtitle = religion + ' ∘ ' + denomination;
         let footer = showCardFooter(osmShowUrl, '🔍 w OSM', 'details', osmEditUrlId, '📝 Edytuj (iD)', 'edit', osmEditUrlRemote, '🔌 Edytuj (JOSM)', 'edit');
 
-        card = L.control.card(cardContent, title, subtitle, cardImage, footer, {
+        card = L.control.card(cardContent, title, subtitle, headerImage, footer, {
             position: 'topleft'
         });
 
