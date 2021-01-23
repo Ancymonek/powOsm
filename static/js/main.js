@@ -318,6 +318,7 @@ function showProperty(caption, property, postfix) {
 function parseOpeningHours(property) {
     if (property) {
         let hoursPrettified;
+        console.log(hoursPrettified);
         try {
             let hours = property.toString();
             let oh = new opening_hours(hours, undefined, 2);
@@ -393,7 +394,6 @@ function getWikimediaCommonsLicenseInfo(filename) {
             .then(response => response.json())
             .then(json => {
                 if (json) {
-                    console.log(json);
                     author = json.query.pages[-1].imageinfo[0].extmetadata.Artist.value;
                     license = json.query.pages[-1].imageinfo[0].extmetadata.LicenseShortName.value;
                     if (license == 'Public domain') {

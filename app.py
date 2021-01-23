@@ -6,7 +6,7 @@ from geojson import FeatureCollection
 from pymongo import MongoClient
 
 import settings
-from functions import docache, timeit
+from functions import docache
 from data_import import (
     export_date_to_html_file,
     geojson_do_mongodb,
@@ -105,7 +105,7 @@ def import_filename(import_key: str, force: int):
         # 4. Generate statistics of usage of some tags
         statistics_to_html_file(
             "religion",
-            osm_tag_statistics("religion", settings.database, settings.POW_COLLECTION),
+            osm_tag_statistics("religion", settings.database, settings.POW_mnmCOLLECTION),
             "templates/religion_stats.html",
         )
         statistics_to_html_file(
