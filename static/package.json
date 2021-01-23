@@ -9,8 +9,8 @@
   "author": "Ancymon",
   "license": "ISC",
   "dependencies": {
+    "blueimp-md5": "^2.18.0",
     "bulma": "^0.9.1",
-    "crypto-js": "^4.0.0",
     "leaflet": "^1.7.1",
     "leaflet-ajax": "^2.1.0"
   }

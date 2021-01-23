@@ -318,7 +318,6 @@ function showProperty(caption, property, postfix) {
 function parseOpeningHours(property) {
     if (property) {
         let hoursPrettified;
-        console.log(hoursPrettified);
         try {
             let hours = property.toString();
             let oh = new opening_hours(hours, undefined, 2);
@@ -427,12 +426,13 @@ function getWikimediaCommonsUrl(imgName) {
         imgName = imgName.split(' ').join('_');
         let size = 350;
         let urlBase = 'https://upload.wikimedia.org/wikipedia/commons/thumb';
-        let md5 = CryptoJS.MD5(imgName).toString();
-        let firstPart = "/" + md5[0];
-        let secondPart = "/" + md5.slice(0, 2);
+        let md5_part = md5(imgName).toString();
+        let firstPart = "/" + md5_part[0];
+        let secondPart = "/" + md5_part.slice(0, 2);
         let thirdPart = "/" + imgName;
         let fourthPart = '/' + size + 'px-' + imgName;
         let fullUrl = urlBase + firstPart + secondPart + thirdPart + fourthPart;
+        console.log('DZIAŁA:' + fullUrl);
         return fullUrl;
     }
 }
