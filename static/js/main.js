@@ -86,7 +86,7 @@ function showContribution(contributionInfo) {
             let separator = ' | ';
             let author = contributionInfo.author;
             let authorPart = document.createElement('span');
-            authorPart.setAttribute('style', 'contribution-author');
+            authorPart.setAttribute('class', 'contribution-author');
             authorPart.innerHTML = author;
             authorText = authorPart.textContent || authorPart.innerText || "";
 
@@ -99,7 +99,7 @@ function showContribution(contributionInfo) {
                 licensePart = license;
             }
 
-            if (authorText.length > 25) {
+            if (authorText.length > 30) {
                 let anchor = document.createElement('a');
                 anchor.setAttribute('title', authorText);
                 anchor.textContent = '[?]';
@@ -383,6 +383,7 @@ function markerFilter(feature, layer) {
 //#region Wikimedia functions
 
 function getWikimediaCommonsLicenseInfo(filename) {
+    let wikiLicenseUrl;
     // refactoring needed (catching error`)
     if (filename) {
         let author, license, contributionInfo;
@@ -396,15 +397,16 @@ function getWikimediaCommonsLicenseInfo(filename) {
                 if (json) {
                     author = json.query.pages[-1].imageinfo[0].extmetadata.Artist.value;
                     license = json.query.pages[-1].imageinfo[0].extmetadata.LicenseShortName.value;
-                    if (license == 'Public domain') {
-                        license = 'Domena publiczna';
+                    
+                    if (json.query.pages[-1].imageinfo[0].extmetadata.LicenseUrl.value)
+                    {
+                        wikiLicenseUrl = json.query.pages[-1].imageinfo[0].extmetadata.LicenseUrl.value;
                     }
 
-                    //licenseUrl = json.query.pages[-1].imageinfo[0].extmetadata.LicenseUrl.value;
                     let contributionInfo = {
                         'author': author || '',
                         'license': license || '?',
-                        'licenseUrl': '' //licenseUrl  || to fix
+                        'licenseUrl': wikiLicenseUrl || ''
                     };
                     showContribution(contributionInfo);
                 }
@@ -415,7 +417,7 @@ function getWikimediaCommonsLicenseInfo(filename) {
                 contributionInfo = {
                     'author': author,
                     'license': license,
-                    'licenseUrl': '' //licenseUrl  || 
+                    'licenseUrl': 'https://pl.wikipedia.org/wiki/Domena_publiczna' //licenseUrl  || 
                 };
                 showContribution(contributionInfo);
             });
