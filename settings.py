@@ -34,6 +34,8 @@ server = config("DBHOST")
 port = config("DBPORT")
 user = urllib.parse.quote_plus(config("DBUSER"))
 password = urllib.parse.quote_plus(config("DBPASSWORD"))
+host = config("HOST", default="127.0.0.1")
+
 uri = "mongodb://" + user + ":" + password + "@" + server + ":" + port + "/" + database
 
 # Other

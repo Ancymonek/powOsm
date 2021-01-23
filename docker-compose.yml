@@ -1,0 +1,31 @@
+version: '3.8'
+services:
+  powosm:
+    build: .
+    image: powosm
+    volumes:
+      - .:/app
+    ports:
+      - 5000:5000
+    command: bash -c "mkdir -p data/logs/ && cd static && npm install && cd .. && python app.py"
+    environment:
+      DEBUG: 'true'
+      DBNAME: powosm
+      DBUSER: root
+      DBPASSWORD: password
+      DBHOST: mongo
+      DBPORT: 27017
+      IMPORT_KEY: changeme
+      HOST: 0.0.0.0
+    depends_on:
+      - mongo
+  mongo:
+    image: mongo:4.4.3-bionic
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: powosm
+    volumes:
+      - ./mongo-init.sh:/docker-entrypoint-initdb.d/mongo-init.sh:ro

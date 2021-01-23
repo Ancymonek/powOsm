@@ -136,7 +136,7 @@ def import_filename(import_key: str, force: int):
 
 
 if __name__ == "__main__":
-    app.run(debug=settings.debug_mode)
+    app.run(debug=settings.debug_mode, host=settings.host)
 
 
 """ 
