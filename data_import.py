@@ -54,7 +54,7 @@ def filter_osm_geojson(file):
                 if key in ["opening_hours", "service_times"] and validate_input(
                     value, hours_filter_values
                 ):
-                    feature["properties"]["o"] = 0
+                    feature["properties"]["o"] = 1
 
     return data
 
