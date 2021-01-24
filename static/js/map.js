@@ -155,35 +155,28 @@ function generateCardTemplate(id, apiFeature) {
         // 2. Wikidata main image (api request + img request) - asynchronous,
         // To do: 1. Wikimedia Commons category parse and get first image, 2. Get image if only Wikipedia article is provided (it's not so easy*)
 
-        if (tags.image.value && (tags.image.value.startsWith(mapillaryImagesPrefix) || tags.image.value.startsWith(wikimediaCommonsPrefix) || tags.image.value.startsWith(wikimediaCommonsShortPrefix)) ) 
-        {
+        if (tags.image.value && (tags.image.value.startsWith(mapillaryImagesPrefix) || tags.image.value.startsWith(wikimediaCommonsPrefix) || tags.image.value.startsWith(wikimediaCommonsShortPrefix))) {
             let image = tags.image.value;
-            if (image.startsWith(mapillaryImagesPrefix))
-            {
+            if (image.startsWith(mapillaryImagesPrefix)) {
                 headerImage = parseImageTag(image);
                 let contributionInfo = {
                     'author': '<a href="' + image + '" target="_blank" rel="noreferrer">Mapillary</a>',
                     'license': 'CC BY-SA 4.0',
-                    'licenseUrl': 'https://creativecommons.org/licenses/by-sa/4.0/' 
+                    'licenseUrl': 'https://creativecommons.org/licenses/by-sa/4.0/'
                 };
                 showContribution(contributionInfo);
-            }
-            else if (image.startsWith(wikimediaCommonsPrefix) || image.startsWith(wikimediaCommonsShortPrefix)) {
+            } else if (image.startsWith(wikimediaCommonsPrefix) || image.startsWith(wikimediaCommonsShortPrefix)) {
                 let imageDecodedName = parseImageTag(image)
                 let fullWikimediaUrl = getWikimediaCommonsUrl(imageDecodedName);
                 getWikimediaCommonsLicenseInfo(imageDecodedName);
                 headerImage = fullWikimediaUrl;
             }
-        }
-        else if (tags.wikidata.value) {
+        } else if (tags.wikidata.value) {
             getWikidataImg(tags.wikidata.value);
-        } 
-        else {
+        } else {
             headerImage = cardImage;
             contribution = 'is-invisible';
         }
-
-
 
         if (apiFeature.properties.tags.building == 'yes') {
             buildingSuperscript = showHint('Wartość tagu jest zbyt ogólna, uzupełnij go odpowiednią wartością (np. dla kościoła building=church, dla kaplicy - building=chapel'); //' <sup>[ <a title="Wartość tagu jest zbyt ogólna, uzupełnij go odpowiednią wartością (np. dla kościoła building=church, dla kaplicy - building=chapel).">?</a> ]</sup>';
@@ -303,8 +296,7 @@ function onEachFeature(feature, layer) {
 
 let geojsonLayer = new L.GeoJSON.AJAX(dataFile, {
     pointToLayer: function (feature, latlng) {
-        let marker = L.circleMarker(getCoords(feature)).setStyle(circleMarkerStyle);
-        //activeMarkers[feature.properties.id] = marker;        
+        let marker = L.circleMarker(getCoords(feature)).setStyle(circleMarkerStyle);    
         marker.setStyle(setZoomStyle(basicZoom));
 
         //active marker (open card)
@@ -326,11 +318,10 @@ let geojsonLayer = new L.GeoJSON.AJAX(dataFile, {
 });
 
 geojsonLayer.on('data:loaded', function () {
-    layerObjects = geojsonLayer.getLayers().length;
+    layerObjects = poiMarkers.getLayers().length;
     if (layerObjects) {
         showNumberOfFeatures(layerObjects);
     }
-
 });
 
 // Show card if url has valid id

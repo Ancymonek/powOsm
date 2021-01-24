@@ -117,11 +117,15 @@ pow_filter_values = (
     "nieustajacej",
     "panski",
     "wszytk",
-    "p.w."
+    "p.w.",
+    "Stansiława",
 )
+pow_filter_sensitive_values = ('jezus')
+
 pow_filter_short_values = (
     "NMP",
     "MB",
+    "M.B.",
     "św.",
     "bł.",
     "fil.",

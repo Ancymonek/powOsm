@@ -356,7 +356,7 @@ function markerFilter(feature, layer) {
         layer.addTo(wrongNameMarkers);
     }
 
-    if (feature.properties.n == 2) {
+    if (feature.properties.s == 1) {
         layer.addTo(wrongShortnameMarkers);
     }
 
@@ -372,7 +372,7 @@ function markerFilter(feature, layer) {
         layer.addTo(missingBuildingNameValueMarkers);
     }
 
-    if (feature.properties.o == 0 || feature.properties.o == 1) {
+    if (feature.properties.o == 1) {
         layer.addTo(wrongServiceHoursValueMarkers);
     }
 

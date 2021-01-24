@@ -14,6 +14,7 @@ from settings import (
     input_file,
     logging,
     pow_filter_short_values,
+    pow_filter_sensitive_values,
     pow_filter_values,
     hours_filter_values,
     uri,
@@ -34,16 +35,11 @@ def filter_osm_geojson(file):
 
             # Format other values
             for key, value in list(feature["properties"]["tags"].items()):
-                if (
-                    key == "name"
-                    and validate_input(value, pow_filter_values, "kościoła")
-                ) or (key == "name" and value.isupper()):
-                    feature["properties"]["n"] = 1
-
-                if key == "name" and validate_input(
-                    value, pow_filter_short_values, "kościoła"
-                ):
-                    feature["properties"]["n"] = 2
+                if key == 'name':
+                    if validate_input(value, pow_filter_values, ["kościoła"]) or value.isupper():
+                        feature["properties"]["n"] = 1
+                    if validate_input(value, pow_filter_short_values, ["kościoła"]):
+                        feature["properties"]["s"] = 1
 
                 if "religion" not in feature["properties"]["tags"]:
                     feature["properties"]["r"] = 1
@@ -56,23 +52,31 @@ def filter_osm_geojson(file):
 
                 # It's hard to find working Python opening_hours parser so it's a validator based on manually checked incorrect values, should contain about 80% cases
                 if key in ["opening_hours", "service_times"] and validate_input(
-                    value, hours_filter_values, "kościoła"
+                    value, hours_filter_values
                 ):
                     feature["properties"]["o"] = 0
 
     return data
 
 
-def validate_input(input_value: str, filter_list: list, excluded_value: str):
+def validate_input(
+    input_value: str,
+    filter_list: list,
+    excluded_value: list = [],
+    ignore_sensivity=True,
+):
+    words = input_value.split(sep=" ")
+    matches = []
 
-    matches = [
-        word
-        for word in filter_list
-        if (
-            word.lower() in input_value.lower()
-            and excluded_value not in input_value.lower()
-        )
-    ]
+    for filter in filter_list:
+        for word in words:
+            if ignore_sensivity and (
+                filter.lower() in word.lower()
+                and word.lower() not in map(str.lower, excluded_value)
+            ):
+                matches.append(word)
+            elif ignore_sensivity is False and (filter in word and word not in excluded_value):
+                matches.append(word)
 
     if matches:
         return True

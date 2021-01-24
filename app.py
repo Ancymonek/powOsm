@@ -105,7 +105,7 @@ def import_filename(import_key: str, force: int):
         # 4. Generate statistics of usage of some tags
         statistics_to_html_file(
             "religion",
-            osm_tag_statistics("religion", settings.database, settings.POW_mnmCOLLECTION),
+            osm_tag_statistics("religion", settings.database, settings.POW_COLLECTION),
             "templates/religion_stats.html",
         )
         statistics_to_html_file(
