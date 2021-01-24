@@ -141,7 +141,7 @@ function generateCardTemplate(id, apiFeature) {
         if (tags.heritage.value && tags.heritageRef.value) {
             let anchorImg = document.createElement('a');
             let heritageImg = new Image();
-            heritageImg.src = "static/img/zabytek.png";
+            heritageImg.src = 'static/img/zabytek.png';
             heritageImg.setAttribute('class', "is-pulled-right m-2 heritage");
             heritageImg.setAttribute('title', tags.heritageRef.value);
             anchorImg.innerHTML = heritageImg.outerHTML;
@@ -195,7 +195,7 @@ function generateCardTemplate(id, apiFeature) {
 
         contactDiv.innerHTML = showUrlTag('website', tags.website.value, 'witryna') + showTag('email') + showTag('phone');
 
-        moreInfoDiv.innerHTML = showUrlTag('wikipedia', getWikipediaUrl(tags.wikipedia.value), parseWikipediaTitle(tags.wikipedia.value)) + showUrlTag('wikidata', 'https://www.wikidata.org/wiki/' + tags.wikidata.value, tags.wikidata.value) +
+        moreInfoDiv.innerHTML = showUrlTag('wikipedia', getWikipediaUrl(tags.wikipedia.value), parseWikipediaTitle(tags.wikipedia.value)) + showUrlTag('wikidata', 'https://www.wikidata.org/wiki/' + tags.wikidata.value, tags.wikidata.value, '', '<a href="https://reasonator.toolforge.org/?q='+tags.wikidata.value+'" rel="noopener" target="_blank" title="Reasonator"><img src="../static/img/reasonator.png" height="20" width="20" alt="Reasonator" class="pl-1"></a>') +
             showUrlTag('mapillary', tags.mapillary.value, 'zdjęcie') + showUrlTag('url', tags.url.value, 'witryna') +
             showTag('description') + showTag('wheelchair', '', ' <sup>♿</sup>');
 

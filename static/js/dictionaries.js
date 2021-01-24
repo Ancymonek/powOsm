@@ -242,6 +242,10 @@ const valuesDictionary = {
         'pl': 'neobarok',
         'en': 'neo-baroque'
     },
+    'building:architecture:neo-gothic': {
+        'pl': 'neogotyk',
+        'en': 'neo-gothic'
+    },
     'building:architecture:renaissance': {
         'pl': 'renesans',
         'en': 'renaissance'
@@ -278,7 +282,7 @@ const tagsDictionary = {
         'pl': 'diecezja'
     },
     'service_times': {
-        'en': 'service times',
+        'en': 'times of service',
         'pl': 'godziny nabożeństw'
     },
     'opening_hours': {
@@ -304,6 +308,19 @@ const tagsDictionary = {
     'operator': {
         'en': 'operator',
         'pl': 'zarządzający'
+    },
+    'start_date':
+    {
+        'en': 'start date',
+        'pl': 'data od'
+    },
+    'year_of_construction': {
+        'en': 'year of construction',
+        'pl': 'data wybudowania' 
+    },
+    'architect': {
+        'en': 'architect',
+        'pl': 'architekt' 
     }
 };
 
@@ -363,15 +380,15 @@ function featureTags(apiFeature)
             'value': tag(apiFeature, 'building') || ''
         },
         'startDate': {
-            'label': 'data od',
+            'label': label('start_date'),
             'value': tag(apiFeature, 'start_date') || ''
         },
         'yearOfConstruction': {
-            'label': 'wybudowany',
+            'label': label('year_of_construction'),
             'value': (tag(apiFeature, 'year_of_construction') || tag(apiFeature, 'construction_date')) || ''
         },
         'architect': {
-            'label': 'architekt',
+            'label': label('architekt'),
             'value': tag(apiFeature, 'architect') || ''
         },
         'buildingArchitecture': {

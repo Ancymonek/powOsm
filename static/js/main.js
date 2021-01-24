@@ -135,7 +135,7 @@ function showTag(tagName, newTagLabel = undefined, postfix = undefined) {
     return '';
 }
 
-function showUrlTag(tagName, url, title, newTagLabel = undefined, postfix = undefined) {
+function showUrlTag(tagName, url, title, newTagLabel = undefined, postfix = undefined, icon=undefined) {
     if (tags[tagName].value) {
         let cardHeader = document.createElement('p');
         cardHeader.setAttribute("class", "mb-1 ml-2");
@@ -149,8 +149,14 @@ function showUrlTag(tagName, url, title, newTagLabel = undefined, postfix = unde
         let tagValue = document.createElement('span');
         tagValue.setAttribute("class", "has-text-weight-normal");
         tagValue.innerHTML = showProperty('<a href="', url, '" rel="noopener" target="_blank">' + title + '</a>');
-
-        cardHeader.innerHTML = tagLabel.outerHTML + ': ' + tagValue.outerHTML + (postfix || ' <sup>🔗</sup>');
+        let iconSup = document.createElement('sup');
+        
+        if (!icon)
+        {
+            iconSup.innerHTML = '🔗';
+            icon = iconSup;
+        }      
+        cardHeader.innerHTML = tagLabel.outerHTML + ': ' + tagValue.outerHTML + (postfix || icon.outerHTML );
 
         return cardHeader.outerHTML;
     }
