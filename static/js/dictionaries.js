@@ -388,7 +388,7 @@ function featureTags(apiFeature)
             'value': (tag(apiFeature, 'year_of_construction') || tag(apiFeature, 'construction_date')) || ''
         },
         'architect': {
-            'label': label('architekt'),
+            'label': label('architect'),
             'value': tag(apiFeature, 'architect') || ''
         },
         'buildingArchitecture': {
