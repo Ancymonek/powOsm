@@ -119,6 +119,9 @@ pow_filter_values = (
     "wszytk",
     "p.w.",
     "Stansiława",
+    "Archnioła",
+    "archaniola",
+    "michala"
 )
 pow_filter_sensitive_values = ('jezus')
 
@@ -129,6 +132,7 @@ pow_filter_short_values = (
     "św.",
     "bł.",
     "fil.",
-    "par."
+    "par.",
+    "kapl."
 )
 hours_filter_values = ('niedziela', 'lub', 'miesi�ca', '�wi�ta', 'Dni', 'święta', 'miesiąca', 'http', 'www', 'dzia�a', 'działa', 'św', '�w', 'powszednie', 'service_times', 'pn', 'pt', 'śr', 'wt', 'czw', 'sob', '�r', 'nd')

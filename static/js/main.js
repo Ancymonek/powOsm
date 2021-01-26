@@ -226,7 +226,7 @@ function setZoomStyle(zoom) {
         myRadius = zoom * 0.6;
         interactiveMode = true;
     } else {
-        myRadius = zoom * 0.25;
+        myRadius = zoom * 0.4;
         interactiveMode = false;
     }
 

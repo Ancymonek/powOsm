@@ -3,6 +3,8 @@ let activeCard = 0;
 let cardImage = 'static/img/christian_church.png';
 let card;
 let activeMarkers = [];
+let defaultMarkerBorderColor = '#FFFFFF';
+let defaultMarkerFillColor = '#746044'; //#51412b
 const dataFile = baseUrl + '/api/feature/all';
 const filteredFile = baseUrl + '/api/feature/names';
 const apiUrl = baseUrl + '/api/items/';
@@ -28,11 +30,6 @@ let overlayLayers = {
     "Obiekty z błędnymi tagami service_times i opening_hours": wrongServiceHoursValueMarkers
 };
 
-
-let religionLayers = {
-    "Chrześcijaństwo": poiMarkers,
-};
-
 // Permalink init
 let mapLoc = L.Permalink.getMapLocation();
 
@@ -40,6 +37,7 @@ let mapLoc = L.Permalink.getMapLocation();
 let map = L.map('mapid', {
     preferCanvas: true,
     center: mapLoc.center,
+    minZoom: 7,
     zoom: mapLoc.zoom,
     zoomControl: false,
     layers: [poiMarkers]
@@ -52,11 +50,11 @@ L.Permalink.setup(map);
 // Markers 
 L.control.layers(false, overlayLayers).addTo(map);
 
-let defaultMarkerColor = '#746044'; //#51412b
 let circleMarkerStyle = {
-    weight: 2,
-    fillOpacity: 0.3,
-    color: defaultMarkerColor,
+    weight: 1,
+    fillOpacity: 0.9,
+    color: defaultMarkerBorderColor,
+    fillColor: defaultMarkerFillColor,
 };
 
 function addActiveMarker(layer) {
@@ -92,25 +90,11 @@ L.control.zoom({
     position: 'bottomright'
 }).addTo(map);
 
-document.addEventListener("DOMContentLoaded", function (event) {
-    var selector = document.querySelectorAll('input[type=checkbox]');
-
-    for (i = 0; i < selector.length; i++) {
-        selector[i].addEventListener('change', function (event) {
-            if (this.checked && selector[0] != this) {
-                setTimeout(function () {
-                    selector.checked = false;
-                }, 250);
-            }
-            // do something if checked
-        });
-    }
-});
 
 map.on('zoomend', function () {
     let currentZoom = map.getZoom();
-
     poiMarkers.setStyle(setZoomStyle(currentZoom));
+
 });
 
 map.on('moveend', function () {
@@ -195,7 +179,7 @@ function generateCardTemplate(id, apiFeature) {
 
         contactDiv.innerHTML = showUrlTag('website', tags.website.value, 'witryna') + showTag('email') + showTag('phone');
 
-        moreInfoDiv.innerHTML = showUrlTag('wikipedia', getWikipediaUrl(tags.wikipedia.value), parseWikipediaTitle(tags.wikipedia.value)) + showUrlTag('wikidata', 'https://www.wikidata.org/wiki/' + tags.wikidata.value, tags.wikidata.value, '', '<a href="https://reasonator.toolforge.org/?q='+tags.wikidata.value+'" rel="noopener" target="_blank" title="Reasonator"><img src="../static/img/reasonator.png" height="20" width="20" alt="Reasonator" class="pl-1"></a>') +
+        moreInfoDiv.innerHTML = showUrlTag('wikipedia', getWikipediaUrl(tags.wikipedia.value), parseWikipediaTitle(tags.wikipedia.value)) + showUrlTag('wikidata', 'https://www.wikidata.org/wiki/' + tags.wikidata.value, tags.wikidata.value, '', '<a href="https://reasonator.toolforge.org/?q=' + tags.wikidata.value + '" rel="noopener" target="_blank" title="Reasonator"><img src="../static/img/reasonator.png" height="20" width="20" alt="Reasonator" class="pl-1"></a>') +
             showUrlTag('mapillary', tags.mapillary.value, 'zdjęcie') + showUrlTag('url', tags.url.value, 'witryna') +
             showTag('description') + showTag('wheelchair', '', ' <sup>♿</sup>');
 
@@ -296,7 +280,7 @@ function onEachFeature(feature, layer) {
 
 let geojsonLayer = new L.GeoJSON.AJAX(dataFile, {
     pointToLayer: function (feature, latlng) {
-        let marker = L.circleMarker(getCoords(feature)).setStyle(circleMarkerStyle);    
+        let marker = L.circleMarker(getCoords(feature)).setStyle(circleMarkerStyle);
         marker.setStyle(setZoomStyle(basicZoom));
 
         //active marker (open card)
