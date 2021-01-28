@@ -470,3 +470,12 @@ function featureTags(apiFeature)
     };
     return tags;
 }
+
+const religionsDict = {
+    1: 'chrześcijaństwo',
+    2: 'judaizm',
+    3: 'wielowyznaniowe',
+    4: 'buddyzm',
+    5: 'islam',
+    6: 'hinduizm'
+};

@@ -6,6 +6,7 @@ from decouple import config
 
 # Constants values
 POW_COLLECTION = "place_of_worship"
+OFFICE_COLLECTION = "office_religion"
 OVERPASS_ENDPOINTS = [
     r"https://overpass-api.de/api/interpreter",
     r"https://overpass.kumi.systems/api/interpreter",
@@ -15,6 +16,7 @@ CACHE_TIME = 1440
 # Paths
 LOG_FILE = Path("data/logs/import.log")
 input_file = Path("data/export_poland_new.json")
+input_file_office = Path("data/export_poland_office.json")
 
 # Logging set up
 logging.basicConfig(

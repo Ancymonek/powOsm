@@ -25,11 +25,16 @@ def index():
     return render_template("index.html")
 
 
-@app.route("/api/feature/<filter>")
+@app.route("/api/<feature>/<filter>")
 @docache(minutes=settings.CACHE_TIME, content_type="application/json")
-def feature(filter: str):
+def feature(feature: str, filter: str):
     db = client[settings.database]
-    collection = db[settings.POW_COLLECTION]
+    if feature == 'pow':
+        collection = db[settings.POW_COLLECTION]
+    elif feature == 'office':
+        collection = db[settings.OFFICE_COLLECTION]
+    else:
+        return None
 
     if filter != "all":
         return None
@@ -51,10 +56,17 @@ def feature(filter: str):
     return json.dumps(features_collection, separators=(",", ":"))
 
 
-@app.route("/api/items/<item_id>")
-def items(item_id: str):
+@app.route("/api/items/<feature>/<item_id>")
+def items(feature: str, item_id: str):
     db = client[settings.database]
-    pow = db[settings.POW_COLLECTION]
+    
+    if feature == 'pow':
+        collection = db[settings.POW_COLLECTION]
+    elif feature == 'office':
+        collection = db[settings.OFFICE_COLLECTION]
+    else:
+        return None
+
     item_type = item_id[0]
 
     # w261260517
@@ -70,14 +82,14 @@ def items(item_id: str):
 
     item_id = int(item_id[1:])
 
-    return pow.find_one(
+    return collection.find_one(
         {"$and": [{"properties.id": item_id, "properties.type": item_type}]},
         {"_id": 0},
     )
 
 
 @app.route("/import/<import_key>/<int:force>")
-def import_filename(import_key: str, force: int):
+def import_pow_geojson(import_key: str, force: int):
 
     if import_key != settings.import_key:
         return {"Result": "Fail. Check your key."}
@@ -134,6 +146,32 @@ def import_filename(import_key: str, force: int):
 
     return {"Result": "Ok"}
 
+
+@app.route("/import_office/<import_key>/<int:force>")
+def import_office_geojson(import_key: str, force: int):
+    if import_key != settings.import_key:
+        return {"Result": "Fail. Check your key."}
+    
+    force = force == 1
+
+    execute = overpass_to_geojson(
+        settings.input_file_office,
+        3600049715,
+        "office",
+        "religion",
+        force_download=force,
+    )
+
+    if execute:
+        # 2. Geojson file to MongoDB export
+        geojson_do_mongodb(
+            settings.input_file_office,
+            settings.database,
+            settings.OFFICE_COLLECTION,
+            tag_filter=False,
+        )
+
+        return {"Result": "Ok"}
 
 if __name__ == "__main__":
     app.run(debug=settings.debug_mode, host=settings.host)

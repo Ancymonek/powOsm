@@ -135,7 +135,7 @@ function showTag(tagName, newTagLabel = undefined, postfix = undefined) {
     return '';
 }
 
-function showUrlTag(tagName, url, title, newTagLabel = undefined, postfix = undefined, icon=undefined) {
+function showUrlTag(tagName, url, title, newTagLabel = undefined, postfix = undefined, icon = undefined) {
     if (tags[tagName].value) {
         let cardHeader = document.createElement('p');
         cardHeader.setAttribute("class", "mb-1 ml-2");
@@ -150,13 +150,12 @@ function showUrlTag(tagName, url, title, newTagLabel = undefined, postfix = unde
         tagValue.setAttribute("class", "has-text-weight-normal");
         tagValue.innerHTML = showProperty('<a href="', url, '" rel="noopener" target="_blank">' + title + '</a>');
         let iconSup = document.createElement('sup');
-        
-        if (!icon)
-        {
+
+        if (!icon) {
             iconSup.innerHTML = '🔗';
             icon = iconSup;
-        }      
-        cardHeader.innerHTML = tagLabel.outerHTML + ': ' + tagValue.outerHTML + (postfix || icon.outerHTML );
+        }
+        cardHeader.innerHTML = tagLabel.outerHTML + ': ' + tagValue.outerHTML + (postfix || icon.outerHTML);
 
         return cardHeader.outerHTML;
     }
@@ -357,17 +356,13 @@ function getPoiOsmUrl(action, feature, editType) {
 }
 
 function markerFilter(feature, layer) {
-    category = [];
+    // categories kept short to not make .geojson too big
     if (feature.properties.n == 1) {
         layer.addTo(wrongNameMarkers);
     }
 
-    if (feature.properties.s == 1) {
+    if (feature.properties.s === 1) {
         layer.addTo(wrongShortnameMarkers);
-    }
-
-    if (feature.properties.r == 1) {
-        layer.addTo(missingReligionTagMarkers);
     }
 
     if (feature.properties.d == 1) {
@@ -380,6 +375,36 @@ function markerFilter(feature, layer) {
 
     if (feature.properties.o == 1) {
         layer.addTo(wrongServiceHoursValueMarkers);
+    }
+
+    if (feature.properties.e == 1) {
+        layer.addTo(missingDeaneryTagMarkers);
+    }
+
+    if (feature.properties.i == 1) {
+        layer.addTo(missingDioceseTagMarkers);
+    }
+
+    if (feature.properties.r == 1) {
+        layer.addTo(missingReligionTagMarkers);
+        }
+        else if (feature.properties.r == 2) {
+            layer.addTo(christianMarkers);
+        }
+        else if (feature.properties.r == 3) {
+            layer.addTo(jewishMarkers);
+        }
+        else if (feature.properties.r == 4) {
+            layer.addTo(buddhismMarkers);
+        }
+        else if (feature.properties.r == 5) {
+            layer.addTo(muslimMarkers);
+        }
+        else if (feature.properties.r == 6) {
+            layer.addTo(hinduMarkers);
+        }
+        else if (feature.properties.r == 7) {
+        layer.addTo(multifaithMarkers);
     }
 
 }
@@ -403,9 +428,8 @@ function getWikimediaCommonsLicenseInfo(filename) {
                 if (json) {
                     author = json.query.pages[-1].imageinfo[0].extmetadata.Artist.value;
                     license = json.query.pages[-1].imageinfo[0].extmetadata.LicenseShortName.value;
-                    
-                    if (json.query.pages[-1].imageinfo[0].extmetadata.LicenseUrl.value)
-                    {
+
+                    if (json.query.pages[-1].imageinfo[0].extmetadata.LicenseUrl.value) {
                         wikiLicenseUrl = json.query.pages[-1].imageinfo[0].extmetadata.LicenseUrl.value;
                     }
 

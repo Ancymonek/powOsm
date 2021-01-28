@@ -24,11 +24,10 @@ html {
     border-radius: 2px;
 }
 
-.logo-svg
-{
-    fill:#645446;
-    fill-opacity:1;
-    stroke:none
+.logo-svg {
+    fill: #645446;
+    fill-opacity: 1;
+    stroke: none
 }
 
 #mapid {
@@ -115,10 +114,17 @@ html {
     box-shadow: inset 0 0 5px #dcdcdc;
 }
 
-.poi-image,
-.has-background-brown,
 .leaflet-control-layers,
 .leaflet-bar a {
+    font: inherit !important;
+    font-weight: 300 !important;
+    color: #4a4a4a !important;
+    background-color: #FFFFFF !important;
+}
+
+
+.poi-image,
+.has-background-brown {
     background-color: #645446 !important;
 }
 
@@ -138,9 +144,11 @@ html {
     color: #645446;
 }
 
-.leaflet-control-layers,
-.leaflet-bar a {
-    color: #ebeae4 !important;
+.leaflet-control-layers-expanded {
+    padding: 15px !important;
+    border: 0 !important;
+    border-radius: 10px;
+    box-shadow: 0 0.5em 1em -0.125em rgba(10, 10, 10, 0.1), 0 0px 0 1px rgba(10, 10, 10, 0.02);
 }
 
 .leaflet-control-attribution {
@@ -155,7 +163,7 @@ html {
 }
 
 .heritage {
-    margin-top:-20px !important;
+    margin-top: -20px !important;
     width: 30px;
     height: 45px;
 }
@@ -175,4 +183,12 @@ html {
 .modal-card,
 .modal-close {
     z-index: 9999 !important;
+}
+
+.leaflet-layerstree-children {
+    padding-left: 30px !important;
+}
+
+.leaflet-layerstree-header-name {
+    padding-left: 4px;
 }

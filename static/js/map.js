@@ -5,30 +5,113 @@ let card;
 let activeMarkers = [];
 let defaultMarkerBorderColor = '#FFFFFF';
 let defaultMarkerFillColor = '#746044'; //#51412b
-const dataFile = baseUrl + '/api/feature/all';
-const filteredFile = baseUrl + '/api/feature/names';
-const apiUrl = baseUrl + '/api/items/';
+const dataFilePow = baseUrl + '/api/pow/all';
+const dataFileOffice = baseUrl + '/api/office/all';
+const apiUrlPow = baseUrl + '/api/items/pow/';
+const apiUrlOffice = baseUrl + '/api/items/office/';
 const title = 'Obiekty religijne w Polsce';
 const locale = (navigator.languages || [])[0] || navigator.userLanguage || navigator.language || navigator.browserLanguage || 'pl';
 
 // Marker groups
 let poiMarkers = new L.FeatureGroup();
+let officeMarkers = new L.FeatureGroup();
 let wrongNameMarkers = new L.FeatureGroup();
 let wrongShortnameMarkers = new L.FeatureGroup();
 let missingReligionTagMarkers = new L.FeatureGroup();
 let missingDenominationTagMarkers = new L.FeatureGroup();
+let missingDioceseTagMarkers = new L.FeatureGroup();
+let missingDeaneryTagMarkers = new L.FeatureGroup();
 let missingBuildingNameValueMarkers = new L.FeatureGroup();
 let wrongServiceHoursValueMarkers = new L.FeatureGroup();
 
-let overlayLayers = {
-    "Obiekty religijne": poiMarkers,
-    "Obiekty z literówkami w nazwie (Kościoł, Kościol itp.)": wrongNameMarkers,
-    "Obiekty ze skrótami do rozwinięcia/usunięcia (NMP, św. par., fil.) ": wrongShortnameMarkers,
-    "Obiekty bez określonego tagu 'religion'": missingReligionTagMarkers,
-    "Obiekty bez określonego tagu 'denomination'": missingDenominationTagMarkers,
-    "Obiekty z ogólnym tagiem budynku (building=yes)": missingBuildingNameValueMarkers,
-    "Obiekty z błędnymi tagami service_times i opening_hours": wrongServiceHoursValueMarkers
+// religion markers
+let christianMarkers = new L.FeatureGroup();
+let jewishMarkers = new L.FeatureGroup();
+let multifaithMarkers = new L.FeatureGroup();
+let buddhismMarkers = new L.FeatureGroup();
+let muslimMarkers = new L.FeatureGroup();
+let hinduMarkers = new L.FeatureGroup();
+
+var overlaysTree = {
+    label: 'Obiekty religijne',
+    layer: poiMarkers,
+    collapsed: false,
+    children: [{
+            label: 'Religie 🛐',
+            collapsed: true,
+            selectAllCheckbox: true,
+            children: [{
+                    label: "✝️ chrześcijaństwo",
+                    layer: christianMarkers
+                },
+                {
+                    label: "✡️ judaizm",
+                    layer: jewishMarkers
+                },
+                {
+                    label: "🕉️ buddyzm",
+                    layer: buddhismMarkers
+                },
+                {
+                    label: "☪️ islam",
+                    layer: muslimMarkers
+                },
+                {
+                    label: "☸️ hinduizm",
+                    layer: hinduMarkers
+                },
+                {
+                    label: "🛐 wiele wyznań",
+                    layer: multifaithMarkers
+                },
+            ]
+        },
+        {
+            label: 'Kancelarie parafialne, biura 💼',
+            collapsed: true,
+            layer: officeMarkers,
+            children: []
+        },
+        {
+            label: 'Obiekty do poprawy/uzupełnienia ✏️',
+            selectAllCheckbox: 'Zaznacz/odznacz wszystkie',
+            children: [{
+                    label: "Obiekty z literówkami w nazwie (Kościoł, Kościol itp.)",
+                    layer: wrongNameMarkers
+                },
+                {
+                    label: "Obiekty ze skrótami do rozwinięcia/usunięcia (NMP, św. par., fil.) ",
+                    layer: wrongShortnameMarkers
+                },
+                {
+                    label: "Obiekty bez określonego tagu 'religion'",
+                    layer: missingReligionTagMarkers
+                },
+                {
+                    label: "Obiekty bez określonego tagu 'denomination'",
+                    layer: missingDenominationTagMarkers
+                },
+                                {
+                    label: "Obiekty bez określonego tagu 'diocese'",
+                    layer: missingDioceseTagMarkers
+                },
+                {
+                    label: "Obiekty bez określonego tagu 'deanery'",
+                    layer: missingDeaneryTagMarkers
+                },
+                {
+                    label: "Obiekty z ogólnym tagiem budynku (building=yes)",
+                    layer: missingBuildingNameValueMarkers
+                },
+                {
+                    label: "Obiekty z błędnymi tagami 'service_times' i 'opening_hours'",
+                    layer: wrongServiceHoursValueMarkers
+                },
+            ],
+        }
+    ]
 };
+
 
 // Permalink init
 let mapLoc = L.Permalink.getMapLocation();
@@ -42,13 +125,14 @@ let map = L.map('mapid', {
     zoomControl: false,
     layers: [poiMarkers]
 });
-let geoUrl = dataFile + '/' + map.getBounds().toBBoxString();
+let geoUrl = dataFilePow + '/' + map.getBounds().toBBoxString();
 
 // Permalink setup
 L.Permalink.setup(map);
 
 // Markers 
-L.control.layers(false, overlayLayers).addTo(map);
+// L.control.layers(false, overlayLayers).addTo(map);
+// L.control.layers(false, religionLayers).addTo(map);
 
 let circleMarkerStyle = {
     weight: 1,
@@ -81,7 +165,41 @@ let osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 });
+
+let osmHumanitarian = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+});
+
+let topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+    attribution: 'Kartendaten: &copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende, <a href="http://viewfinderpanoramas.org">SRTM</a> | Kartendarstellung: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+    maxZoom: 18,
+    maxNativeZoom: 17,
+    minZoom: 6,
+    detectRetina: false,
+  });		
+//
+
 osm.addTo(map);
+
+var baseTree = {
+    label: 'Podkład mapowy',
+    collapsed: true,
+    children: [{
+        label: 'OpenStreetMap',
+        layer: osm
+    },
+    {
+        label: 'OpenStreetMap Humanitarian',
+        layer: osmHumanitarian
+    },
+    {
+        label: 'Topo',
+        layer: topo
+    },
+]
+};
+L.control.layers.tree(baseTree, overlaysTree).addTo(map);
 
 // Zoom and map interaction
 let basicZoom = map.getZoom();
@@ -94,7 +212,7 @@ L.control.zoom({
 map.on('zoomend', function () {
     let currentZoom = map.getZoom();
     poiMarkers.setStyle(setZoomStyle(currentZoom));
-
+    officeMarkers.setStyle(setZoomStyle(currentZoom));
 });
 
 map.on('moveend', function () {
@@ -230,12 +348,12 @@ function generateCardTemplate(id, apiFeature) {
     }
 }
 
-function getFeatureInfo(feature, urlId) {
+function getFeatureInfo(feature, urlId, apiEndpoint) {
     if (feature || urlId) {
         let id = urlId || feature.properties.id;
         setFeatureIdHash(id);
 
-        let queryUrl = apiUrl + id;
+        let queryUrl = apiEndpoint + id;
         var req = new XMLHttpRequest();
         req.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
@@ -257,28 +375,28 @@ function getFeatureInfo(feature, urlId) {
 }
 
 // Show info about map features
-function onEachFeature(feature, layer) {
+function onEachFeatureClosure(apiEndpoint) {
+    return function onEachFeature(feature, layer) {
+        markerFilter(feature, layer);
+        layer.on('click',
+            function (e) {
+                let id = feature.properties.id;
+                clearActiveMarker(circleMarkerStyle);
 
-    markerFilter(feature, layer);
-    layer.on('click',
-        function (e) {
-            let id = feature.properties.id;
-            clearActiveMarker(circleMarkerStyle);
-
-            if (activeCard != id) {
-                const elements = document.getElementsByClassName("poi-card");
-                if (typeof elements !== 'undefined') {
-                    while (elements.length > 0) elements[0].remove();
+                if (activeCard != id) {
+                    const elements = document.getElementsByClassName("poi-card");
+                    if (typeof elements !== 'undefined') {
+                        while (elements.length > 0) elements[0].remove();
+                    }
+                    getFeatureInfo(feature, '', apiEndpoint);
+                    // To do - setting marker active when refreshing site with open card
+                    addActiveMarker(layer);
                 }
-                getFeatureInfo(feature);
-                // To do - setting marker active when refreshing site with open card
-                addActiveMarker(layer);
-            }
-        });
-
+            });
+};
 }
 
-let geojsonLayer = new L.GeoJSON.AJAX(dataFile, {
+let geojsonLayer = new L.GeoJSON.AJAX(dataFilePow, {
     pointToLayer: function (feature, latlng) {
         let marker = L.circleMarker(getCoords(feature)).setStyle(circleMarkerStyle);
         marker.setStyle(setZoomStyle(basicZoom));
@@ -298,7 +416,30 @@ let geojsonLayer = new L.GeoJSON.AJAX(dataFile, {
         marker.addTo(poiMarkers);
         return marker;
     },
-    onEachFeature: onEachFeature,
+    onEachFeature: onEachFeatureClosure(apiUrlPow),
+});
+
+let officeLayer = new L.GeoJSON.AJAX(dataFileOffice, {
+    pointToLayer: function (feature, latlng) {
+        let marker = L.circleMarker(getCoords(feature)).setStyle(circleMarkerStyle);
+        marker.setStyle(setZoomStyle(basicZoom));
+
+        //active marker (open card)
+        if (feature.properties.id == getFeatureIdFromHash(window.location.href)) {
+            addActiveMarker(marker);
+        }
+
+        // stupid fix - to refactor
+        marker.on('mouseover', function () {
+            if (feature.properties.id == getFeatureIdFromHash(window.location.href)) {
+                addActiveMarker(marker);
+            }
+        });
+
+        marker.addTo(officeMarkers);
+        return marker;
+    },
+    onEachFeature: onEachFeatureClosure(apiUrlOffice),
 });
 
 geojsonLayer.on('data:loaded', function () {

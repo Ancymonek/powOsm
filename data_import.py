@@ -35,26 +35,50 @@ def filter_osm_geojson(file):
 
             # Format other values
             for key, value in list(feature["properties"]["tags"].items()):
-                if key == 'name':
-                    if validate_input(value, pow_filter_values, ["kościoła"]) or value.isupper():
+                if key == "name":
+                    if (
+                        validate_input(value, pow_filter_values, ["kościoła"])
+                        or value.isupper()
+                    ):
                         feature["properties"]["n"] = 1
                     if validate_input(value, pow_filter_short_values, ["kościoła"]):
                         feature["properties"]["s"] = 1
 
-                if "religion" not in feature["properties"]["tags"]:
-                    feature["properties"]["r"] = 1
-
-                if "denomination" not in feature["properties"]["tags"]:
-                    feature["properties"]["d"] = 1
-
+                if key == "religion":
+                    if value == "christian":
+                        feature["properties"]["r"] = 2
+                    elif value == "jewish":
+                        feature["properties"]["r"] = 3
+                    elif value == "buddhist":
+                        feature["properties"]["r"] = 4
+                    elif value == "muslim":
+                        feature["properties"]["r"] = 5
+                    elif value == "hindu":
+                        feature["properties"]["r"] = 6
+                    elif value == "multifaith":
+                        feature["properties"]["r"] = 7
+                
                 if key == "building" and value == "yes":
                     feature["properties"]["b"] = 1
 
-                # It's hard to find working Python opening_hours parser so it's a validator based on manually checked incorrect values, should contain about 80% cases
                 if key in ["opening_hours", "service_times"] and validate_input(
                     value, hours_filter_values
                 ):
                     feature["properties"]["o"] = 1
+
+                if "religion" not in feature["properties"]["tags"]:
+                    feature["properties"]["r"] = 1
+                # find more elegant way to do this
+
+                if "denomination" not in feature["properties"]["tags"]:
+                    feature["properties"]["d"] = 1
+
+                if "diocese" not in feature["properties"]["tags"]:
+                    feature["properties"]["i"] = 1
+
+                if "deanery" not in feature["properties"]["tags"]:
+                    feature["properties"]["e"] = 1
+                    # It's hard to find working Python opening_hours parser so it's a validator based on manually checked incorrect values, should contain about 80% cases
 
     return data
 
@@ -75,7 +99,9 @@ def validate_input(
                 and word.lower() not in map(str.lower, excluded_value)
             ):
                 matches.append(word)
-            elif ignore_sensivity is False and (filter in word and word not in excluded_value):
+            elif ignore_sensivity is False and (
+                filter in word and word not in excluded_value
+            ):
                 matches.append(word)
 
     if matches:
