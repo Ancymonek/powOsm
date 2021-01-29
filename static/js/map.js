@@ -34,12 +34,12 @@ let hinduMarkers = new L.FeatureGroup();
 
 var overlaysTree = {
     label: 'Obiekty religijne',
-    layer: poiMarkers,
     collapsed: false,
+    layer: poiMarkers,
     children: [{
-            label: 'Religie 🛐',
+            label: 'Obiekty według religii 🛐',
             collapsed: true,
-            selectAllCheckbox: true,
+            selectAllCheckbox: 'Zaznacz/odznacz wszystkie',
             children: [{
                     label: "✝️ chrześcijaństwo",
                     layer: christianMarkers
@@ -171,13 +171,10 @@ let osmHumanitarian = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}
     attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 });
 
-let topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-    attribution: 'Kartendaten: &copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende, <a href="http://viewfinderpanoramas.org">SRTM</a> | Kartendarstellung: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
-    maxZoom: 18,
-    maxNativeZoom: 17,
-    minZoom: 6,
-    detectRetina: false,
-  });		
+var osmBw = L.tileLayer(
+    'http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png',
+    {attribution: '© OpenStreetMap contributors'}
+);	
 //
 
 osm.addTo(map);
@@ -194,8 +191,8 @@ var baseTree = {
         layer: osmHumanitarian
     },
     {
-        label: 'Topo',
-        layer: topo
+        label: 'Czarno-biała',
+        layer: osmBw
     },
 ]
 };
@@ -452,5 +449,5 @@ geojsonLayer.on('data:loaded', function () {
 // Show card if url has valid id
 if (activeCard == 0 && getFeatureIdFromHash(window.location.href) != null) {
     let id = getFeatureIdFromHash(window.location.href);
-    getFeatureInfo('', id);
+    getFeatureInfo('', id, apiUrlPow) || getFeatureInfo('', id, apiUrlOffice);
 }
