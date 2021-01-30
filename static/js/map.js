@@ -84,7 +84,7 @@ var overlaysTree = {
                     layer: multifaithMarkers
                 },
                 {
-                    label: "🛐 wiele wyznań",
+                    label: "🛐 inne",
                     layer: otherReligonMarkers
                 },
             ]
