@@ -14,16 +14,16 @@ OVERPASS_ENDPOINTS = [
 CACHE_TIME = 1440
 
 # Paths
-LOG_FILE = Path("data/logs/import.log")
-input_file = Path("data/export_poland_new.json")
-input_file_office = Path("data/export_poland_office.json")
+LOG_FILE = "data/logs/import.log"
+input_file_pow = "data/export_poland_new.json"
+input_file_office = "data/export_poland_office.json"
 
 # Logging set up
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s",
     datefmt="%m-%d %H:%M",
-    filename=LOG_FILE,
+    filename=Path(LOG_FILE),
     filemode="a",
 )
 console = logging.StreamHandler()
@@ -123,18 +123,44 @@ pow_filter_values = (
     "Stansiława",
     "Archnioła",
     "archaniola",
-    "michala"
+    "michala",
 )
-pow_filter_sensitive_values = ('jezus')
+pow_filter_sensitive_values = "jezus"
 
-pow_filter_short_values = (
-    "NMP",
-    "MB",
-    "M.B.",
-    "św.",
-    "bł.",
-    "fil.",
-    "par.",
-    "kapl."
+pow_filter_short_values = ("NMP", "MB", "M.B.", "św.", "bł.", "fil.", "par.", "kapl.")
+hours_filter_values = (
+    "niedziela",
+    "lub",
+    "miesi�ca",
+    "�wi�ta",
+    "Dni",
+    "święta",
+    "miesiąca",
+    "http",
+    "www",
+    "dzia�a",
+    "działa",
+    "św",
+    "�w",
+    "powszednie",
+    "service_times",
+    "pn",
+    "pt",
+    "śr",
+    "wt",
+    "czw",
+    "sob",
+    "�r",
+    "nd",
 )
-hours_filter_values = ('niedziela', 'lub', 'miesi�ca', '�wi�ta', 'Dni', 'święta', 'miesiąca', 'http', 'www', 'dzia�a', 'działa', 'św', '�w', 'powszednie', 'service_times', 'pn', 'pt', 'śr', 'wt', 'czw', 'sob', '�r', 'nd')
+religion_mapping = {
+    "none": 1,
+    "christian": 2,
+    "jewish": 3,
+    "buddhist": 4,
+    "muslim": 5,
+    "hindu": 6,
+    "multifaith": 7,
+    "pagan": 8,
+    "other": 9
+}

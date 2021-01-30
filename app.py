@@ -4,12 +4,14 @@ from datetime import date
 from flask import Flask, render_template
 from geojson import FeatureCollection
 from pymongo import MongoClient
+from pathlib import Path
 
 import settings
 from functions import docache
 from data_import import (
     export_date_to_html_file,
-    geojson_do_mongodb,
+    geojson_to_mongodb,
+    filter_osm_geojson,
     osm_tag_statistics,
     overpass_to_geojson,
     statistics_to_html_file,
@@ -29,14 +31,15 @@ def index():
 @docache(minutes=settings.CACHE_TIME, content_type="application/json")
 def feature(feature: str, filter: str):
     db = client[settings.database]
-    if feature == 'pow':
-        collection = db[settings.POW_COLLECTION]
-    elif feature == 'office':
-        collection = db[settings.OFFICE_COLLECTION]
-    else:
-        return None
 
     if filter != "all":
+        return None
+
+    if feature == "pow":
+        collection = db[settings.POW_COLLECTION]
+    elif feature == "office":
+        collection = db[settings.OFFICE_COLLECTION]
+    else:
         return None
 
     result = collection.find({}, {"_id": False, "properties.tags": False})
@@ -59,10 +62,10 @@ def feature(feature: str, filter: str):
 @app.route("/api/items/<feature>/<item_id>")
 def items(feature: str, item_id: str):
     db = client[settings.database]
-    
-    if feature == 'pow':
+
+    if feature == "pow":
         collection = db[settings.POW_COLLECTION]
-    elif feature == 'office':
+    elif feature == "office":
         collection = db[settings.OFFICE_COLLECTION]
     else:
         return None
@@ -91,87 +94,95 @@ def items(feature: str, item_id: str):
 @app.route("/import/<import_key>/<int:force>")
 def import_pow_geojson(import_key: str, force: int):
 
+    geojson_output_file = settings.input_file_pow
+
     if import_key != settings.import_key:
-        return {"Result": "Fail. Check your key."}
+        return {"Result": 0, "Reason": "Incorrect key."}
 
     force = force == 1
 
     # 1
     execute = overpass_to_geojson(
-        settings.input_file,
-        3600049715,
-        "amenity",
-        "place_of_worship",
-        force_download=force,
-    )
+            geojson_output_file,
+            3600049715,
+            "amenity",
+            "place_of_worship",
+            force_download=force,
+        )
 
     if execute:
+        # 1. Filter Geojson:
+        geojson_file_processed = filter_osm_geojson(geojson_output_file)
+
         # 2. Geojson file to MongoDB export
-        geojson_do_mongodb(
-            settings.input_file,
-            settings.database,
-            settings.POW_COLLECTION,
-            tag_filter=True,
-        )
+        if geojson_file_processed:
+            geojson_to_mongodb(
+                geojson_file_processed, settings.database, settings.POW_COLLECTION
+            )
 
-        # 4. Generate statistics of usage of some tags
-        statistics_to_html_file(
-            "religion",
-            osm_tag_statistics("religion", settings.database, settings.POW_COLLECTION),
-            "templates/religion_stats.html",
-        )
-        statistics_to_html_file(
-            "denomination",
-            osm_tag_statistics(
-                "denomination", settings.database, settings.POW_COLLECTION
-            ),
-            "templates/denomination_stats.html",
-        )
+            # 3. Generate statistics of usage of some tags
+            statistics_to_html_file(
+                "religion",
+                osm_tag_statistics("religion", settings.database, settings.POW_COLLECTION),
+                "templates/religion_stats.html",
+            )
+            statistics_to_html_file(
+                "denomination",
+                osm_tag_statistics(
+                    "denomination", settings.database, settings.POW_COLLECTION
+                ),
+                "templates/denomination_stats.html",
+            )
+            statistics_to_html_file(
+                "church:type",
+                osm_tag_statistics(
+                    "church:type", settings.database, settings.POW_COLLECTION
+                ),
+                "templates/churchtype_stats.html",
+            )
+            statistics_to_html_file(
+                "building",
+                osm_tag_statistics("building", settings.database, settings.POW_COLLECTION),
+                "templates/building_stats.html",
+            )
+            export_date_to_html_file(date.today(), "templates/export.html")
 
-        statistics_to_html_file(
-            "church:type",
-            osm_tag_statistics(
-                "church:type", settings.database, settings.POW_COLLECTION
-            ),
-            "templates/churchtype_stats.html",
-        )
+            return {"Result": 1}
+        else:
+            return {"Result": 0, "Reason": "Error, incorrect processed file"}
 
-        statistics_to_html_file(
-            "building",
-            osm_tag_statistics("building", settings.database, settings.POW_COLLECTION),
-            "templates/building_stats.html",
-        )
-        # 5. Set html with last update:
-        export_date_to_html_file(date.today(), "templates/export.html")
-
-    return {"Result": "Ok"}
+    return {"Result": 0, "Reason": "No changes"}
 
 
 @app.route("/import_office/<import_key>/<int:force>")
 def import_office_geojson(import_key: str, force: int):
+
+    geojson_output_file = settings.input_file_office
+
     if import_key != settings.import_key:
-        return {"Result": "Fail. Check your key."}
-    
+        return {"Result": 0, "Reason": "Incorrect key."}
+
     force = force == 1
 
     execute = overpass_to_geojson(
-        settings.input_file_office,
-        3600049715,
-        "office",
-        "religion",
-        force_download=force,
+        geojson_output_file, 3600049715, "office", "religion", force_download=force
     )
 
     if execute:
-        # 2. Geojson file to MongoDB export
-        geojson_do_mongodb(
-            settings.input_file_office,
-            settings.database,
-            settings.OFFICE_COLLECTION,
-            tag_filter=False,
+        # 1. Format .geojson file
+        geojson_output_file = filter_osm_geojson(
+            geojson_output_file, tags=False, coords=True
         )
 
-        return {"Result": "Ok"}
+        # 2. Geojson file to MongoDB export
+        geojson_to_mongodb(
+            geojson_output_file, settings.database, settings.OFFICE_COLLECTION
+        )
+
+        return {"Result": 1}
+
+    return {"Result": 0, "Reason": "No changes"}
+
 
 if __name__ == "__main__":
     app.run(debug=settings.debug_mode, host=settings.host)

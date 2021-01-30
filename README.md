@@ -14,9 +14,11 @@ Stack:
 
 Developement przy użyciu VSCode.
 
+Sposoby uruchomienia:
+1. Poprzez plik docker-compose.yml
 
 Aby uruchomić należy:
-1. do katalogu root dodać plik .ENV ze zmiennymi (DEBUG = True/False, DBNAME, DBUSER, DBPASSWORD, DBHOST, DBPORT, IMPORT_KEY (używany do zdalnego uruchamiania skryptu aktualizacyjnego)
+1. do katalogu root dodać plik .ENV ze zmiennymi (DEBUG = True/False, DBNAME, DBUSER, DBPASSWORD, DBHOST, DBPORT, IMPORT_KEY (używany do uruchamiania skryptu aktualizacyjnego dane)
 1. pobrać brakujące paczki node (/static/package-lock.json)
 1. zainstalować wszystkie pakiety z requirements.txt.
 

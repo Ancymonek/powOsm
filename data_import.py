@@ -11,76 +11,82 @@ from pymongo.errors import BulkWriteError
 from settings import (
     OVERPASS_ENDPOINTS,
     Path,
-    input_file,
     logging,
     pow_filter_short_values,
-    pow_filter_sensitive_values,
     pow_filter_values,
     hours_filter_values,
     uri,
+    religion_mapping
 )
 
 
-def filter_osm_geojson(file):
-    # keep new geojson properties short to keep .geojson file small
-    with open(file, encoding="utf-8") as json_file:
-        data = json.load(json_file)
+def format_coordinates(lat, long, fp: int = 5):
+    if not lat and long:
+        return None
 
-        for feature in data["features"]:
-            # Format coordinates
-            lat, long = float("%.5f" % feature["geometry"]["coordinates"][0]), float(
-                "%.5f" % feature["geometry"]["coordinates"][1]
-            )
-            feature["geometry"]["coordinates"] = [lat, long]
+    output_lat, output_long = float(f"%.{fp}f" % lat), float(f"%.{fp}f" % long)
+    return [output_lat, output_long]
 
-            # Format other values
-            for key, value in list(feature["properties"]["tags"].items()):
-                if key == "name":
-                    if (
-                        validate_input(value, pow_filter_values, ["kościoła"])
-                        or value.isupper()
-                    ):
-                        feature["properties"]["n"] = 1
-                    if validate_input(value, pow_filter_short_values, ["kościoła"]):
-                        feature["properties"]["s"] = 1
 
-                if key == "religion":
-                    if value == "christian":
-                        feature["properties"]["r"] = 2
-                    elif value == "jewish":
-                        feature["properties"]["r"] = 3
-                    elif value == "buddhist":
-                        feature["properties"]["r"] = 4
-                    elif value == "muslim":
-                        feature["properties"]["r"] = 5
-                    elif value == "hindu":
-                        feature["properties"]["r"] = 6
-                    elif value == "multifaith":
-                        feature["properties"]["r"] = 7
-                
-                if key == "building" and value == "yes":
-                    feature["properties"]["b"] = 1
+def filter_osm_geojson(file: str, tags: bool = True, coords: bool = True) -> str:
+    file_path = Path(file)
 
-                if key in ["opening_hours", "service_times"] and validate_input(
-                    value, hours_filter_values
-                ):
-                    feature["properties"]["o"] = 1
+    with open(file_path, "r", encoding="utf-8") as json_file:
+        try:
+            data = json.load(json_file)
 
-                if "religion" not in feature["properties"]["tags"]:
-                    feature["properties"]["r"] = 1
-                # find more elegant way to do this
+            for feature in data["features"]:
+                if coords:
+                    feature["geometry"]["coordinates"] = format_coordinates(
+                        feature["geometry"]["coordinates"][0],
+                        feature["geometry"]["coordinates"][1],
+                    )
 
-                if "denomination" not in feature["properties"]["tags"]:
-                    feature["properties"]["d"] = 1
+                if tags:
+                    # Format other values
+                    for key, value in list(feature["properties"]["tags"].items()):
+                        prop = feature["properties"]
+                        if key == "name":
+                            if (
+                                validate_input(value, pow_filter_values, ["kościoła"])
+                                or value.isupper()
+                            ):
+                                prop["n"] = 1
+                            if validate_input(
+                                value, pow_filter_short_values, ["kościoła"]
+                            ):
+                                prop["s"] = 1
 
-                if "diocese" not in feature["properties"]["tags"]:
-                    feature["properties"]["i"] = 1
+                        if key == "religion":
+                            prop["r"] = religion_mapping[value]
 
-                if "deanery" not in feature["properties"]["tags"]:
-                    feature["properties"]["e"] = 1
-                    # It's hard to find working Python opening_hours parser so it's a validator based on manually checked incorrect values, should contain about 80% cases
+                        if key == "building" and value == "yes":
+                            prop["b"] = 1
 
-    return data
+                        if key in ["opening_hours", "service_times"] and validate_input(
+                            value, hours_filter_values
+                        ):
+                            prop["o"] = 1
+
+                        if "religion" not in prop["tags"]:
+                            prop["r"] = 1
+                        if "denomination" not in prop["tags"]:
+                            prop["d"] = 1
+
+                        if "diocese" not in prop["tags"]:
+                            prop["i"] = 1
+
+                        if "deanery" not in prop["tags"]:
+                            prop["e"] = 1
+
+        except ValueError as e:
+            logging.error(f"Value Error: {e}")
+            return None
+    
+    with open(file_path, "w", encoding="utf-8") as json_file:
+        json.dump(data, json_file) 
+
+    return file
 
 
 def validate_input(
@@ -111,7 +117,7 @@ def validate_input(
 
 
 def overpass_to_geojson(
-    output_file: Path,
+    output_file: str,
     area_id: int,
     tag_name: str,
     tag_value: str,
@@ -121,13 +127,17 @@ def overpass_to_geojson(
 ):
     today = date.today()
 
+    output_file_path = Path(output_file)
+
     try:
-        file_last_mod_date = datetime.fromtimestamp(output_file.stat().st_mtime).date()
+        file_last_mod_date = datetime.fromtimestamp(
+            output_file_path.stat().st_mtime
+        ).date()
     except FileNotFoundError:
         file_last_mod_date = date(1900, 1, 1)
 
     if (
-        output_file.is_file()
+        output_file_path.is_file()
         and file_last_mod_date == today
         and force_download is False
     ):
@@ -161,44 +171,41 @@ def overpass_to_geojson(
             logging.error("Finish: Error when converting response .json to .geojson")
             return None
 
-        with open(output_file, mode="w", encoding="utf-8") as f:
+        with open(output_file_path, mode="w", encoding="utf-8") as f:
             geojson.dump(geojson_response, f)
             logging.info("Finish: GeoJSON object successfully dumped to .geojson file")
             return True
 
-
-def geojson_do_mongodb(
-    import_file: Path, target_db: str, target_col: str, osm=True, tag_filter=False
-):
+def geojson_to_mongodb(import_file: str, target_db: str, target_col: str, osm=True):
     # Based on: https://github.com/rtbigdata/geojson-mongo-import.py | MIT License
     client = MongoClient(uri)
     db = client[target_db]
     collection = db[target_col]
 
-    if not import_file.is_file():
-        logging.error(f"Finish: Import file does not exist.")
-        return None
+    import_file_path = Path(import_file)
 
-    if tag_filter is True:
-        logging.info(f"Start: Opening and filtering GeoJSON file {input_file}.")
-        geojson_file = filter_osm_geojson(import_file)
-    else:
-        with open(import_file, "r") as f:
-            logging.info(f"Start: Opening GeoJSON file {input_file}.")
+    if not import_file_path.is_file():
+        logging.error(f"Finish: Import file {import_file} does not exist.")
+        return None
+        
+    with open(import_file_path, "r") as f:
+        logging.info(f"Start: Opening GeoJSON file {import_file}.")
+        try:
             geojson_file = json.loads(f.read())
+        except ValueError as e:
+            logging.error(f'JSON file {import_file} is invalid. Reason: {e}')
+            return None
 
     if target_col in db.list_collection_names():
         logging.info(f"Start: Dropping existing collection {target_col}.")
         collection.drop()
 
     # create 2dsphere index and text indexes
-    logging.info("Start: Creating indexes.")
     collection.create_index([("geometry", GEOSPHERE)])
 
     if osm:
         collection.create_index([("properties.type", TEXT), ("properties.id", TEXT)])
 
-    logging.info("Start: Loading features to object.")
     bulk = collection.initialize_unordered_bulk_op()
 
     for feature in geojson_file["features"]:
@@ -285,52 +292,3 @@ def export_date_to_html_file(import_date: date, export_html: str):
         f.write(paragraph)
 
     logging.info(f"Finish: Statistics saved to .html file: {export_folder}.")
-
-
-""" Currently not used
-def geojson_minify(input_file: Path, output_file: Path, keep_tags: list = []):
-    if not input_file.is_file():
-        return None
-
-    with open(input_file, encoding="utf-8") as json_file:
-        input_size = input_file.stat().st_size
-        logging.info(f"Start: Opening .json file {input_file}, size: {input_size} B")
-        data = json.load(json_file)
-
-        for feature in data["features"]:
-            # simplify coordinates (works only with geojson Node geometry)
-            lat = float("%.5f" % feature["geometry"]["coordinates"][0])
-            long = float("%.5f" % feature["geometry"]["coordinates"][1])
-            feature["geometry"]["coordinates"] = [lat, long]
-
-            # trim osm id and type to single id (i.e. type = 'way', id = '298110952' to w298110952)
-            if feature["properties"]["type"] and feature["properties"]["id"]:
-                feature_type = (
-                    feature["properties"]["type"][0].lower()
-                    + ""
-                    + str(feature["properties"]["id"])
-                )
-                feature["properties"]["id"] = feature_type
-                del feature["properties"]["type"]
-
-            if keep_tags:
-                for key, value in list(feature["properties"]["tags"].items()):
-                    if key not in keep_tags:
-                        del feature["properties"]["tags"][key]
-            else:
-                del feature["properties"]["tags"]
-
-        logging.info(
-            f"Info: Number of features in feature collection: {len(data['features'])}"
-        )
-
-        with open(output_file, mode="w", encoding="utf-8") as f:
-            logging.info(f"Start: Dumping .geojson object to file {output_file}")
-            geojson.dump(data, f, separators=(",", ":"))
-
-        output_size = output_file.stat().st_size
-        diff = round((output_size / input_size) * 100, 3)
-        logging.info(
-            f"Finish: GeoJSON object successfully dumped to .geojson file {output_file}, size: {output_size} B, % of the original file: {diff}%"
-        )
-"""

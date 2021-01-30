@@ -385,30 +385,10 @@ function markerFilter(feature, layer) {
         layer.addTo(missingDioceseTagMarkers);
     }
 
-    if (feature.properties.r == 1) {
-        layer.addTo(missingReligionTagMarkers);
-        }
-        else if (feature.properties.r == 2) {
-            layer.addTo(christianMarkers);
-        }
-        else if (feature.properties.r == 3) {
-            layer.addTo(jewishMarkers);
-        }
-        else if (feature.properties.r == 4) {
-            layer.addTo(buddhismMarkers);
-        }
-        else if (feature.properties.r == 5) {
-            layer.addTo(muslimMarkers);
-        }
-        else if (feature.properties.r == 6) {
-            layer.addTo(hinduMarkers);
-        }
-        else if (feature.properties.r == 7) {
-        layer.addTo(multifaithMarkers);
+    if (feature.properties.r) {
+        layer.addTo(religions[feature.properties.r]);
     }
-
 }
-
 //#endregion Values processing
 
 //#region Wikimedia functions

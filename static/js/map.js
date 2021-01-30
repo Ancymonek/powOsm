@@ -31,6 +31,21 @@ let multifaithMarkers = new L.FeatureGroup();
 let buddhismMarkers = new L.FeatureGroup();
 let muslimMarkers = new L.FeatureGroup();
 let hinduMarkers = new L.FeatureGroup();
+let paganMarkers = new L.FeatureGroup();
+let otherReligonMarkers = new L.FeatureGroup();
+
+const religions = {
+    1: missingReligionTagMarkers,
+    2: christianMarkers,
+    3: jewishMarkers,
+    4: buddhismMarkers,
+    5: muslimMarkers,
+    6: hinduMarkers,
+    7: multifaithMarkers,
+    8: paganMarkers,
+    9: otherReligonMarkers
+};
+
 
 var overlaysTree = {
     label: 'Obiekty religijne',
@@ -61,8 +76,16 @@ var overlaysTree = {
                     layer: hinduMarkers
                 },
                 {
+                    label: "🛐 pogaństwo",
+                    layer: paganMarkers
+                },
+                {
                     label: "🛐 wiele wyznań",
                     layer: multifaithMarkers
+                },
+                {
+                    label: "🛐 wiele wyznań",
+                    layer: otherReligonMarkers
                 },
             ]
         },
@@ -91,7 +114,7 @@ var overlaysTree = {
                     label: "Obiekty bez określonego tagu 'denomination'",
                     layer: missingDenominationTagMarkers
                 },
-                                {
+                {
                     label: "Obiekty bez określonego tagu 'diocese'",
                     layer: missingDioceseTagMarkers
                 },
@@ -144,7 +167,8 @@ let circleMarkerStyle = {
 function addActiveMarker(layer) {
     activeMarkers.push(layer);
     activeMarkers[0].setStyle({
-        color: '#660033',
+        color: defaultMarkerBorderColor,
+        fillColor: '#800000',
         interactive: false
     });
 }
@@ -172,29 +196,29 @@ let osmHumanitarian = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}
 });
 
 var osmBw = L.tileLayer(
-    'http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png',
-    {attribution: '© OpenStreetMap contributors'}
-);	
+    'http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }
+);
 //
-
 osm.addTo(map);
 
 var baseTree = {
     label: 'Podkład mapowy',
     collapsed: true,
     children: [{
-        label: 'OpenStreetMap',
-        layer: osm
-    },
-    {
-        label: 'OpenStreetMap Humanitarian',
-        layer: osmHumanitarian
-    },
-    {
-        label: 'Czarno-biała',
-        layer: osmBw
-    },
-]
+            label: 'OpenStreetMap',
+            layer: osm
+        },
+        {
+            label: 'OpenStreetMap Humanitarian',
+            layer: osmHumanitarian
+        },
+        {
+            label: 'Czarno-biała',
+            layer: osmBw
+        },
+    ]
 };
 L.control.layers.tree(baseTree, overlaysTree).addTo(map);
 
@@ -390,7 +414,7 @@ function onEachFeatureClosure(apiEndpoint) {
                     addActiveMarker(layer);
                 }
             });
-};
+    };
 }
 
 let geojsonLayer = new L.GeoJSON.AJAX(dataFilePow, {

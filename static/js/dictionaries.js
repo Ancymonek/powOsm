@@ -23,6 +23,10 @@ const valuesDictionary = {
         'en': 'hindu',
         'pl': 'hinduizm'
     },
+    'religion:pagan': {
+        'en': 'pagan',
+        'pl': 'pogaństwo'
+    },
 
     //denomination
     'denomination:roman_catholic': {
@@ -470,12 +474,3 @@ function featureTags(apiFeature)
     };
     return tags;
 }
-
-const religionsDict = {
-    1: 'chrześcijaństwo',
-    2: 'judaizm',
-    3: 'wielowyznaniowe',
-    4: 'buddyzm',
-    5: 'islam',
-    6: 'hinduizm'
-};
