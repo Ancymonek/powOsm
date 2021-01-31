@@ -152,3 +152,4 @@ cython_debug/
 /templates/denomination_stats.html
 /templates/churchtype_stats.html
 /templates/building_stats.html
+/static/assets

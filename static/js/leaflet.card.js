@@ -23,7 +23,7 @@ L.Control.Card = L.Control.extend({
         L.DomEvent.disableClickPropagation(this._container);
         this._imageDiv = L.DomUtil.create('div', 'card-image', this._container);
 
-        this._imageContribution = L.DomUtil.create('div', 'contribution pl-2 pr-2 has-text-white is-relative is-pulled-left is-size-7 has-text-weight-light is-hidden', this._imageDiv);
+        this._imageContribution = L.DomUtil.create('div', 'contribution px-2 has-background-dark-brown-transparent has-text-white is-relative is-pulled-left is-size-7 has-text-weight-light is-hidden', this._imageDiv);
         this._imageContribution.id = 'contribution';
         this._imageContribution.innerHTML = ' ';
         this._cardRemoveButton = L.DomUtil.create('button', 'delete is-medium is-pulled-right close-button m-3', this._imageDiv);
@@ -43,7 +43,7 @@ L.Control.Card = L.Control.extend({
 
         // Figure and media
         this._figureImageDiv.appendChild(this._cardImage);
-        this._mediaContent = L.DomUtil.create('div', 'media-content mb-2 p-4 is-relative has-background-black-transparent', this._figureImageDiv);
+        this._mediaContent = L.DomUtil.create('div', 'media-content mb-2 p-4 is-relative has-background-dark-brown-transparent', this._figureImageDiv);
         this._cardTitle = L.DomUtil.create('p', 'title is-4 has-text-white', this._mediaContent);
         this._cardSubtitle = L.DomUtil.create('p', 'subtitle is-6 has-text-weight-light has-text-light pt-2', this._mediaContent);
 

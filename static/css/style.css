@@ -136,19 +136,12 @@ html {
     font: inherit !important;
 }
 
-.has-background-black-transparent {
-    background-color: hsla(0, 0%, 7.1%, 0.71);
+.has-background-dark-brown-transparent {
+    background-color: #1f1a16ca;
 }
 
 .has-text-brown {
     color: #645446;
-}
-
-.leaflet-control-layers-expanded {
-    padding: 15px !important;
-    border: 0 !important;
-    border-radius: 10px;
-    box-shadow: 0 0.5em 1em -0.125em rgba(10, 10, 10, 0.1), 0 0px 0 1px rgba(10, 10, 10, 0.02);
 }
 
 .leaflet-control-attribution {
@@ -158,12 +151,32 @@ html {
     border-radius: 5px;
 }
 
+.leaflet-control-layers {
+    border: 0 !important;
+    border-radius: 5px !important;
+    box-shadow: 0 0.5em 1em -0.125em rgba(10, 10, 10, 0.1), 0 0px 0 1px rgba(10, 10, 10, 0.02) !important;
+}
+
+.leaflet-control-layers-toggle {
+    border: 0 !important;
+    border-radius: 5px !important;
+    box-shadow: 0 0.5em 1em -0.125em rgba(10, 10, 10, 0.1), 0 0px 0 1px rgba(10, 10, 10, 0.02) !important;
+    background-image: url(../img/layers.png) !important;
+}
+
+.leaflet-control-layers-expanded {
+    padding: 15px !important;
+    border: 0 !important;
+    border-radius: 10px;
+    box-shadow: 0 0.5em 1em -0.125em rgba(10, 10, 10, 0.1), 0 0px 0 1px rgba(10, 10, 10, 0.02);
+}
+
 .tag-group {
     border-bottom: 1px solid #e8e8e8;
 }
 
 .heritage {
-    margin-top: -20px !important;
+    margin-top: -15px !important;
     width: 30px;
     height: 45px;
 }
@@ -171,7 +184,6 @@ html {
 .contribution {
     max-width: 300px;
     z-index: 9998;
-    background-color: rgba(10, 10, 10, 0.75);
 }
 
 .contribution a {

@@ -2,9 +2,9 @@ import json
 from datetime import date
 
 from flask import Flask, render_template
+from flask_assets import Environment, Bundle
 from geojson import FeatureCollection
 from pymongo import MongoClient
-from pathlib import Path
 
 import settings
 from functions import docache
@@ -17,9 +17,42 @@ from data_import import (
     statistics_to_html_file,
 )
 
-client = MongoClient(settings.uri)
-
 app = Flask(__name__)
+js_head = Bundle(
+    "node_modules/leaflet/dist/leaflet.js",
+    "node_modules/leaflet-ajax/dist/leaflet.ajax.min.js",
+    "node_modules/leaflet.control.layers.tree/L.Control.Layers.Tree.js",
+    "js/leaflet.permalink.min.js",
+    output="assets/head.js",
+    filters="jsmin",
+)
+js_head_defer = Bundle(
+    "js/leaflet.card.js",
+    "js/dictionaries.js",
+    "js/opening_hours_deps.min.js",
+    "node_modules/blueimp-md5/js/md5.min.js",
+    output="assets/head_def.js",
+    filters="jsmin",
+)
+js_footer = Bundle(
+    "js/main.js", "js/map.js", output="assets/footer.js", filters="jsmin"
+)
+css = Bundle(
+    "node_modules/bulma/css/bulma.css",
+    "node_modules/leaflet/dist/leaflet.css",
+    "node_modules/leaflet.control.layers.tree/L.Control.Layers.Tree.css",
+    "css/style.css",
+    output="assets/main.css",
+    filters="cssmin",
+)
+
+assets = Environment(app)
+assets.register("head_js", js_head)
+assets.register("head_def_js", js_head_defer)
+assets.register("footer_js", js_footer)
+assets.register("main_css", css)
+
+client = MongoClient(settings.uri)
 
 
 @app.route("/")
@@ -43,6 +76,11 @@ def feature(feature: str, filter: str):
         return None
 
     result = collection.find({}, {"_id": False, "properties.tags": False})
+
+    # BBOX Example
+    """ "geometry.coordinates": {
+                "$geoWithin": {"$box": [[bbox[2], bbox[3]], [bbox[0], bbox[1]]]}
+            } """
 
     features = []
     for feature in list(result):
@@ -72,16 +110,14 @@ def items(feature: str, item_id: str):
 
     item_type = item_id[0]
 
-    # w261260517
-    if item_type not in ["n", "w", "r"]:
-        return None
-
     if item_type == "n":
         item_type = "node"
     elif item_type == "w":
         item_type = "way"
     elif item_type == "r":
         item_type = "relation"
+    else:
+        return None
 
     item_id = int(item_id[1:])
 
@@ -103,12 +139,12 @@ def import_pow_geojson(import_key: str, force: int):
 
     # 1
     execute = overpass_to_geojson(
-            geojson_output_file,
-            3600049715,
-            "amenity",
-            "place_of_worship",
-            force_download=force,
-        )
+        geojson_output_file,
+        3600049715,
+        "amenity",
+        "place_of_worship",
+        force_download=force,
+    )
 
     if execute:
         # 1. Filter Geojson:
@@ -123,7 +159,9 @@ def import_pow_geojson(import_key: str, force: int):
             # 3. Generate statistics of usage of some tags
             statistics_to_html_file(
                 "religion",
-                osm_tag_statistics("religion", settings.database, settings.POW_COLLECTION),
+                osm_tag_statistics(
+                    "religion", settings.database, settings.POW_COLLECTION
+                ),
                 "templates/religion_stats.html",
             )
             statistics_to_html_file(
@@ -142,7 +180,9 @@ def import_pow_geojson(import_key: str, force: int):
             )
             statistics_to_html_file(
                 "building",
-                osm_tag_statistics("building", settings.database, settings.POW_COLLECTION),
+                osm_tag_statistics(
+                    "building", settings.database, settings.POW_COLLECTION
+                ),
                 "templates/building_stats.html",
             )
             export_date_to_html_file(date.today(), "templates/export.html")

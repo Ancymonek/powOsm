@@ -7,36 +7,26 @@
 	<meta name="description" content="Strona prezentująca obiekty religijne z bazy OpenStreetMap na mapie Polski.">
 	<title>Obiekty religijne w Polsce</title>
 	<!--Favicons-->
-	<link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
-	<link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
-	<link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
+	<link rel="apple-touch-icon" sizes="180x180"
+		href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
+	<link rel="icon" type="image/png" sizes="32x32"
+		href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
+	<link rel="icon" type="image/png" sizes="16x16"
+		href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
 	<link rel="manifest" href="{{ url_for('static', filename='favicon/site.webmanifest') }}">
 	<link rel="mask-icon" href="{{ url_for('static', filename='favicon/safari-pinned-tab.svg') }}" color="#5bbad5">
 	<meta name="msapplication-TileColor" content="#da532c">
 	<meta name="theme-color" content="#ffffff">
-	<!--JS-->
-	<link rel="prefetch" href="{{ url_for('feature', feature = 'pow', filter='all')}}" as="fetch">
-	<link href="{{ url_for('static', filename='node_modules/bulma/css/bulma.css') }}" rel="stylesheet">
-	<link href="{{ url_for('static', filename='node_modules/leaflet/dist/leaflet.css') }}" rel="stylesheet">
-	<link href="{{ url_for('static', filename='node_modules/leaflet.control.layers.tree/L.Control.Layers.Tree.css') }}" rel="stylesheet">
-	
-	<link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
-	<script src="{{ url_for('static', filename='node_modules/leaflet/dist/leaflet.js')}}"></script>
-	<script src="{{ url_for('static', filename='node_modules/leaflet-ajax/dist/leaflet.ajax.min.js')}}"></script>
-	<script src="{{ url_for('static', filename='node_modules/leaflet.control.layers.tree/L.Control.Layers.Tree.js') }}"></script>
-	<script defer src="{{ url_for('static', filename='js/leaflet.card.js') }}"></script>
-	<script defer src="{{ url_for('static', filename='js/dictionaries.js') }}"></script>
-	<script src="{{ url_for('static', filename='js/leaflet.permalink.min.js') }}"></script>
-	<script defer src="{{ url_for('static', filename='node_modules/blueimp-md5/js/md5.min.js')}}"></script>
-	<script defer src="{{ url_for('static', filename='js/opening_hours_deps.min.js')}}"></script>
-
+	{% assets "main_css" %}<link href="{{ ASSET_URL }}" type="text/css" rel="stylesheet">{% endassets %}
+	{% assets "head_js" %}<script src="{{ ASSET_URL }}"></script>{% endassets %}
+	{% assets "head_def_js" %}<script defer src="{{ ASSET_URL }}"></script>{% endassets %}
 </head>
-
 <body>
 	<nav class="navbar has-background-brown is-fixed-top" role="navigation" aria-label="main navigation">
 		<div class="navbar-brand pl-2 pr-2">
 			<svg class="ml-2 pl-1 my-4 pt-1 logo">
-				<path d="m 6.4996451,0 c -0.828427,0 -1.5,0.6715729 -1.5,1.5 0,0.8284271 0.671573,1.5 1.5,1.5 0.828428,0 1.5,-0.6715729 1.5,-1.5 0,-0.8284271 -0.671573,-1.5 -1.5,-1.5 z M 1.1674331,4.573171 2.4996451,7 l 3,-1 1,4 -2,2 c -0.271186,0.305085 -0.466101,0.45872 -0.5,1 0,1 1,1 1,1 l 5.9999999,0 c 0,0 1,0 1,-1 0,-1 -1,-1 -1,-1 l -2.9999999,0 1,-1 c 1,-1 0.928985,-1.472666 0.8125,-2 l -0.8125,-4 c -0.23939,-0.8934168 -0.862211,-1.3296509 -2,-1.15 l -1,0.15 -3,1.5 -1,-1.5 C 1.5584831,3.412383 0.81642814,3.918233 1.1674331,4.573171 z"
+				<path
+					d="m 6.4996451,0 c -0.828427,0 -1.5,0.6715729 -1.5,1.5 0,0.8284271 0.671573,1.5 1.5,1.5 0.828428,0 1.5,-0.6715729 1.5,-1.5 0,-0.8284271 -0.671573,-1.5 -1.5,-1.5 z M 1.1674331,4.573171 2.4996451,7 l 3,-1 1,4 -2,2 c -0.271186,0.305085 -0.466101,0.45872 -0.5,1 0,1 1,1 1,1 l 5.9999999,0 c 0,0 1,0 1,-1 0,-1 -1,-1 -1,-1 l -2.9999999,0 1,-1 c 1,-1 0.928985,-1.472666 0.8125,-2 l -0.8125,-4 c -0.23939,-0.8934168 -0.862211,-1.3296509 -2,-1.15 l -1,0.15 -3,1.5 -1,-1.5 C 1.5584831,3.412383 0.81642814,3.918233 1.1674331,4.573171 z"
 					id="place-of-worship" class='logo-svg' /></svg>
 			<h1 class="title is-5 is-6-touch has-text-white has-text-weight-light my-4 mr-3 pl-2">Obiekty religijne
 				w Polsce</h1>
@@ -58,9 +48,11 @@
 				<span
 					class="py-4 pl-1 has-text-weight-light has-text-white is-size-6 is-size-7-touch">{% include 'export.html' %}
 				</span>
-				 
-				<span
-					class="pt-4 pr-2 pl-4 has-text-weight-light has-text-white is-size-6 is-size-7-touch"><a href="https://github.com/Ancymonek/powOsm" target="_blank" rel="noopener"><img class="github" src="{{ url_for('static', filename='img/github.png') }}" alt="Github" height="24" width="24"></a>
+
+				<span class="pt-4 pr-2 pl-4 has-text-weight-light has-text-white is-size-6 is-size-7-touch"><a
+						href="https://github.com/Ancymonek/powOsm" target="_blank" rel="noopener"><img class="github"
+							src="{{ url_for('static', filename='img/github.png') }}" alt="Github" height="24"
+							width="24"></a>
 				</span>
 			</div>
 		</div>
@@ -94,8 +86,9 @@
 			</footer>
 		</div>
 	</div>
-	<script src="{{ url_for('static', filename='js/main.js') }}"></script>
-	<script src="{{ url_for('static', filename='js/map.js') }}"></script>
+	{% assets "footer_js" %}
+	<script src="{{ ASSET_URL }}"></script>
+	{% endassets %}
 </body>
 
 </html>
