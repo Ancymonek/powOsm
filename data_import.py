@@ -3,8 +3,10 @@ from builtins import FileNotFoundError
 from datetime import date, datetime
 
 import geojson
+from osm2geojson.main import xml2geojson
 import requests
 from osm2geojson import json2geojson
+import visvalingamwyatt as vw
 from pymongo import GEOSPHERE, TEXT, MongoClient
 from pymongo.errors import BulkWriteError
 
@@ -16,7 +18,8 @@ from settings import (
     pow_filter_values,
     hours_filter_values,
     uri,
-    religion_mapping
+    religion_mapping,
+    missing_tags_mapping,
 )
 
 
@@ -26,6 +29,27 @@ def format_coordinates(lat, long, fp: int = 5):
 
     output_lat, output_long = float(f"%.{fp}f" % lat), float(f"%.{fp}f" % long)
     return [output_lat, output_long]
+
+
+def simplify_geojson(file: str, simplify_ratio=0.3):
+    file_path = Path(file)
+
+    with open(file_path, "r", encoding="utf-8") as json_file:
+        try:
+            data = json.load(json_file)
+            
+            for feature in data["features"]:
+                geo = feature["geometry"]
+                feature["geometry"] = vw.simplify_geometry(geo, ratio=simplify_ratio)
+        
+        except ValueError as e:
+            logging.error(f"Value Error: {e}")
+            return None
+    
+    with open(file_path, "w", encoding="utf-8") as json_file:
+                json.dump(data, json_file)
+    
+    return file
 
 
 def filter_osm_geojson(file: str, tags: bool = True, coords: bool = True) -> str:
@@ -82,9 +106,9 @@ def filter_osm_geojson(file: str, tags: bool = True, coords: bool = True) -> str
         except ValueError as e:
             logging.error(f"Value Error: {e}")
             return None
-    
+
     with open(file_path, "w", encoding="utf-8") as json_file:
-        json.dump(data, json_file) 
+        json.dump(data, json_file)
 
     return file
 
@@ -119,15 +143,18 @@ def validate_input(
 def overpass_to_geojson(
     output_file: str,
     area_id: int,
-    tag_name: str,
-    tag_value: str,
-    out: str = "center",  # center, body
+    out: str = "center",  # center, body, geom
+    response_type: str = "json",
     overpass_endpoint: list[str] = OVERPASS_ENDPOINTS[0],
     force_download=False,
+    **kwargs,
 ):
     today = date.today()
-
     output_file_path = Path(output_file)
+    tags_to_download = "".join(f'["{key}"="{value}"]' for key, value in kwargs.items())
+
+    if response_type not in ["json", "xml"]:
+        return None
 
     try:
         file_last_mod_date = datetime.fromtimestamp(
@@ -149,24 +176,26 @@ def overpass_to_geojson(
         logging.info(
             f"Info: Export .geojson file last modification date: {file_last_mod_date}"
         )
-
         # Overpass Query
-        compact_query = f'[out:json][timeout:20005];area({area_id})->.searchArea;(node["{tag_name}"="{tag_value}"](area.searchArea);way["{tag_name}"="{tag_value}"](area.searchArea);relation["{tag_name}"="{tag_value}"](area.searchArea););out {out};'
+        compact_query = f"[out:{response_type}][timeout:20005];area({area_id})->.searchArea;(node{tags_to_download}(area.searchArea);way{tags_to_download}(area.searchArea);relation{tags_to_download}(area.searchArea););out {out};"
         query = overpass_endpoint + "?data=" + compact_query
         logging.info(f"Start: Connecting to Overpass server: {overpass_endpoint}")
-
         try:
             response = requests.get(query)
             response.raise_for_status()
+            pass
         except requests.exceptions.HTTPError as err:
             raise SystemExit(err)
         if response.status_code != 200:
-            logging.info("End: Server response other than 200")
+            logging.error("End: Server response other than 200")
             return None
-
         try:
-            logging.info("Start: Getting data and extracted to .geojson object..")
-            geojson_response = json2geojson(response.text, log_level="INFO")
+            logging.info("Start: Getting data and extracting to .geojson object..")
+            if response_type == 'json':
+                data = json.load(response.text)
+                geojson_response = json2geojson(data, log_level="ERROR")
+            else:
+                geojson_response = xml2geojson(response.text, log_level="ERROR")
         except:
             logging.error("Finish: Error when converting response .json to .geojson")
             return None
@@ -175,6 +204,7 @@ def overpass_to_geojson(
             geojson.dump(geojson_response, f)
             logging.info("Finish: GeoJSON object successfully dumped to .geojson file")
             return True
+
 
 def geojson_to_mongodb(import_file: str, target_db: str, target_col: str, osm=True):
     # Based on: https://github.com/rtbigdata/geojson-mongo-import.py | MIT License
@@ -187,13 +217,13 @@ def geojson_to_mongodb(import_file: str, target_db: str, target_col: str, osm=Tr
     if not import_file_path.is_file():
         logging.error(f"Finish: Import file {import_file} does not exist.")
         return None
-        
+
     with open(import_file_path, "r") as f:
         logging.info(f"Start: Opening GeoJSON file {import_file}.")
         try:
             geojson_file = json.loads(f.read())
         except ValueError as e:
-            logging.error(f'JSON file {import_file} is invalid. Reason: {e}')
+            logging.error(f"JSON file {import_file} is invalid. Reason: {e}")
             return None
 
     if target_col in db.list_collection_names():

@@ -7,6 +7,7 @@ from decouple import config
 # Constants values
 POW_COLLECTION = "place_of_worship"
 OFFICE_COLLECTION = "office_religion"
+BOUNDARIES_COLLECTION = "religion_boundaries"
 OVERPASS_ENDPOINTS = [
     r"https://overpass-api.de/api/interpreter",
     r"https://overpass.kumi.systems/api/interpreter",
@@ -17,6 +18,7 @@ CACHE_TIME = 1440
 LOG_FILE = "data/logs/import.log"
 input_file_pow = "data/export_poland_new.json"
 input_file_office = "data/export_poland_office.json"
+input_file_boundary = "data/export_poland_boundary.json"
 
 # Logging set up
 logging.basicConfig(
@@ -162,5 +164,11 @@ religion_mapping = {
     "hindu": 6,
     "multifaith": 7,
     "pagan": 8,
-    "other": 9
+    "other": 9,
+}
+missing_tags_mapping = {
+    "religion": "r",
+    "denomination": "d",
+    "diocese": "i",
+    "deanery": "e",
 }

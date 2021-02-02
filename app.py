@@ -1,21 +1,25 @@
 import json
 from datetime import date
+from pathlib import Path
 
 from flask import Flask, render_template
-from flask_assets import Environment, Bundle
+from flask_assets import Bundle, Environment
 from geojson import FeatureCollection
+from osm2geojson import json2geojson
+from osm2geojson.main import json2geojson, json2shapes
 from pymongo import MongoClient
 
 import settings
-from functions import docache
 from data_import import (
     export_date_to_html_file,
-    geojson_to_mongodb,
+    simplify_geojson,
     filter_osm_geojson,
+    geojson_to_mongodb,
     osm_tag_statistics,
     overpass_to_geojson,
     statistics_to_html_file,
 )
+from functions import docache
 
 app = Flask(__name__)
 js_head = Bundle(
@@ -47,12 +51,12 @@ css = Bundle(
 )
 
 assets = Environment(app)
+client = MongoClient(settings.uri)
+
 assets.register("head_js", js_head)
 assets.register("head_def_js", js_head_defer)
 assets.register("footer_js", js_footer)
 assets.register("main_css", css)
-
-client = MongoClient(settings.uri)
 
 
 @app.route("/")
@@ -60,69 +64,89 @@ def index():
     return render_template("index.html")
 
 
-@app.route("/api/<feature>/<filter>")
+@app.route("/api/<item_type>/<filter>")
 @docache(minutes=settings.CACHE_TIME, content_type="application/json")
-def feature(feature: str, filter: str):
+def feature(item_type: str, filter: str):
     db = client[settings.database]
 
-    if filter != "all":
-        return None
+    if filter == "empty":
+        emptyJson = {"type": "FeatureCollection", "features": []}
+        return json.dumps(emptyJson)
 
-    if feature == "pow":
-        collection = db[settings.POW_COLLECTION]
-    elif feature == "office":
-        collection = db[settings.OFFICE_COLLECTION]
+    elif filter == "all":
+        collections = {
+            "pow": [db[settings.POW_COLLECTION], False],
+            "office": [db[settings.OFFICE_COLLECTION], False],
+            "boundaries": [
+                db[settings.BOUNDARIES_COLLECTION],
+                True,
+            ],  # True = keep osm tags
+        }
+
+        try:
+            collection = collections[item_type][0]
+        except KeyError:
+            return {"Result": 0, "Reason": "404. Collection not found"}
+
+        query_settings = {"_id": False}
+
+        if not collections[item_type][1]:
+            query_settings["properties.tags"] = False
+
+        result = collection.find({}, query_settings)
+
+        # BBOX Example
+        """ "geometry.coordinates": {
+                    "$geoWithin": {"$box": [[bbox[2], bbox[3]], [bbox[0], bbox[1]]]}
+                } """
+
+        features = []
+        for feature in list(result):
+            feature_type = feature["properties"]["type"][0].lower() + str(
+                feature["properties"]["id"]
+            )
+            feature["properties"]["id"] = feature_type
+            del feature["properties"]["type"]
+
+            features.append(feature)
+
+        features_collection = FeatureCollection(features)
+
+        return json.dumps(features_collection, separators=(",", ":"))
     else:
         return None
 
-    result = collection.find({}, {"_id": False, "properties.tags": False})
 
-    # BBOX Example
-    """ "geometry.coordinates": {
-                "$geoWithin": {"$box": [[bbox[2], bbox[3]], [bbox[0], bbox[1]]]}
-            } """
-
-    features = []
-    for feature in list(result):
-        feature_type = feature["properties"]["type"][0].lower() + str(
-            feature["properties"]["id"]
-        )
-        feature["properties"]["id"] = feature_type
-        del feature["properties"]["type"]
-
-        features.append(feature)
-
-    features_collection = FeatureCollection(features)
-
-    return json.dumps(features_collection, separators=(",", ":"))
-
-
-@app.route("/api/items/<feature>/<item_id>")
-def items(feature: str, item_id: str):
+@app.route("/api/items/<item_type>/<item_id>")
+def items(item_type: str, item_id: str):
     db = client[settings.database]
 
-    if feature == "pow":
-        collection = db[settings.POW_COLLECTION]
-    elif feature == "office":
-        collection = db[settings.OFFICE_COLLECTION]
-    else:
-        return None
+    collections = {
+        "pow": db[settings.POW_COLLECTION],
+        "office": db[settings.OFFICE_COLLECTION],
+        "boundaries": db[settings.BOUNDARIES_COLLECTION],
+    }
 
-    item_type = item_id[0]
+    try:
+        collection = collections[item_type]
+    except KeyError:
+        return {"Result": 0, "Reason": "404. Collection not found"}
 
-    if item_type == "n":
-        item_type = "node"
-    elif item_type == "w":
-        item_type = "way"
-    elif item_type == "r":
-        item_type = "relation"
+    feature_type = item_id[0]
+
+    if feature_type == "n":
+        feature_type = "node"
+    elif feature_type == "w":
+        feature_type = "way"
+    elif feature_type == "r":
+        feature_type = "relation"
     else:
         return None
 
     item_id = int(item_id[1:])
 
     return collection.find_one(
-        {"$and": [{"properties.id": item_id, "properties.type": item_type}]},
+        {"$and": [{"properties.id": item_id, "properties.type": feature_type}]},
         {"_id": 0},
     )
 
@@ -139,11 +163,10 @@ def import_pow_geojson(import_key: str, force: int):
 
     # 1
     execute = overpass_to_geojson(
-        geojson_output_file,
-        3600049715,
-        "amenity",
-        "place_of_worship",
+        output_file=geojson_output_file,
+        area_id=3600049715,
         force_download=force,
+        amenity="place_of_worship",
     )
 
     if execute:
@@ -205,7 +228,10 @@ def import_office_geojson(import_key: str, force: int):
     force = force == 1
 
     execute = overpass_to_geojson(
-        geojson_output_file, 3600049715, "office", "religion", force_download=force
+        output_file=geojson_output_file,
+        area_id=3600049715,
+        force_download=force,
+        office="religion",
     )
 
     if execute:
@@ -222,6 +248,39 @@ def import_office_geojson(import_key: str, force: int):
         return {"Result": 1}
 
     return {"Result": 0, "Reason": "No changes"}
+
+
+@app.route("/import_boundary/<import_key>/<int:force>")
+def import_boundary_geojson(import_key: str, force: int):
+
+    geojson_output_file = settings.input_file_boundary
+
+    if import_key != settings.import_key:
+        return {"Result": 0, "Reason": "Incorrect key."}
+
+    force = force == 1
+
+    # 2. Geojson file to MongoDB export
+    execute = overpass_to_geojson(
+        output_file=geojson_output_file,
+        area_id=3600049715,
+        force_download=force,
+        response_type="xml",
+        out="geom",
+        boundary="religious_administration",
+        admin_level="8",
+    )
+
+    if execute:
+        # 1. Format .geojson file
+        geojson_output_file = simplify_geojson(geojson_output_file)
+
+        # 2. Geojson file to MongoDB export
+        geojson_to_mongodb(
+            geojson_output_file, settings.database, settings.BOUNDARIES_COLLECTION
+        )
+
+    return {"Result": 1}
 
 
 if __name__ == "__main__":

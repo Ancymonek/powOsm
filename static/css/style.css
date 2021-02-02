@@ -25,7 +25,7 @@ html {
 }
 
 .logo-svg {
-    fill: #645446;
+    fill: #363636;
     fill-opacity: 1;
     stroke: none
 }
@@ -125,7 +125,7 @@ html {
 
 .poi-image,
 .has-background-brown {
-    background-color: #645446 !important;
+    background-color: #363636 !important;
 }
 
 .close-button {
@@ -137,7 +137,7 @@ html {
 }
 
 .has-background-dark-brown-transparent {
-    background-color: #1f1a16ca;
+    background-color: #161616c2;
 }
 
 .has-text-brown {
@@ -151,16 +151,15 @@ html {
     border-radius: 5px;
 }
 
-.leaflet-control-layers {
+.leaflet-control-layers,
+.leaflet-control-zoom,
+.leaflet-control-layers-toggle {
     border: 0 !important;
     border-radius: 5px !important;
     box-shadow: 0 0.5em 1em -0.125em rgba(10, 10, 10, 0.1), 0 0px 0 1px rgba(10, 10, 10, 0.02) !important;
 }
 
 .leaflet-control-layers-toggle {
-    border: 0 !important;
-    border-radius: 5px !important;
-    box-shadow: 0 0.5em 1em -0.125em rgba(10, 10, 10, 0.1), 0 0px 0 1px rgba(10, 10, 10, 0.02) !important;
     background-image: url(../img/layers.png) !important;
 }
 
@@ -203,4 +202,32 @@ html {
 
 .leaflet-layerstree-header-name {
     padding-left: 4px;
+}
+
+.label
+{
+    text-shadow: 1px 1px 0 #363636b2,
+    -1px 1px 0 #363636,
+    1px -1px 0 #363636,
+    -1px -1px 0 #363636,
+    0px 1px 0 #363636,
+    0px -1px 0 #363636,
+    -1px 0px 0 #363636,
+    1px 0px 0 #363636,
+    2px 2px 0 #363636,
+    -2px 2px 0 #363636,
+    2px -2px 0 #363636,
+    -2px -2px 0 #363636,
+    0px 2px 0 #363636,
+    0px -2px 0 #363636,
+    -2px 0px 0 #363636,
+    2px 0px 0 #363636,
+    1px 2px 0 #363636,
+    -1px 2px 0 #363636,
+    1px -2px 0 #363636,
+    -1px -2px 0 #363636,
+    2px 1px 0 #363636,
+    -2px 1px 0 #363636,
+    2px -1px 0 #363636,
+    -2px -1px 0 #363636;
 }

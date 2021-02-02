@@ -17,22 +17,26 @@
 	<link rel="mask-icon" href="{{ url_for('static', filename='favicon/safari-pinned-tab.svg') }}" color="#5bbad5">
 	<meta name="msapplication-TileColor" content="#da532c">
 	<meta name="theme-color" content="#ffffff">
-	{% assets "main_css" %}<link href="{{ ASSET_URL }}" type="text/css" rel="stylesheet">{% endassets %}
-	{% assets "head_js" %}<script src="{{ ASSET_URL }}"></script>{% endassets %}
-	{% assets "head_def_js" %}<script defer src="{{ ASSET_URL }}"></script>{% endassets %}
+	{% assets "main_css" %}
+	<link href="{{ ASSET_URL }}" type="text/css" rel="stylesheet">{% endassets %}
+	{% assets "head_js" %}
+	<script src="{{ ASSET_URL }}"></script>{% endassets %}
+	{% assets "head_def_js" %}
+	<script defer src="{{ ASSET_URL }}"></script>{% endassets %}
 </head>
+
 <body>
 	<nav class="navbar has-background-brown is-fixed-top" role="navigation" aria-label="main navigation">
 		<div class="navbar-brand pl-2 pr-2">
 			<svg class="ml-2 pl-1 my-4 pt-1 logo">
 				<path
 					d="m 6.4996451,0 c -0.828427,0 -1.5,0.6715729 -1.5,1.5 0,0.8284271 0.671573,1.5 1.5,1.5 0.828428,0 1.5,-0.6715729 1.5,-1.5 0,-0.8284271 -0.671573,-1.5 -1.5,-1.5 z M 1.1674331,4.573171 2.4996451,7 l 3,-1 1,4 -2,2 c -0.271186,0.305085 -0.466101,0.45872 -0.5,1 0,1 1,1 1,1 l 5.9999999,0 c 0,0 1,0 1,-1 0,-1 -1,-1 -1,-1 l -2.9999999,0 1,-1 c 1,-1 0.928985,-1.472666 0.8125,-2 l -0.8125,-4 c -0.23939,-0.8934168 -0.862211,-1.3296509 -2,-1.15 l -1,0.15 -3,1.5 -1,-1.5 C 1.5584831,3.412383 0.81642814,3.918233 1.1674331,4.573171 z"
-					id="place-of-worship" class='logo-svg' /></svg>
+					id="place-of-worship" class='logo-svg' />
+			</svg>
 			<h1 class="title is-5 is-6-touch has-text-white has-text-weight-light my-4 mr-3 pl-2">Obiekty religijne
 				w Polsce</h1>
 			<a role="button" class="navbar-burger has-background-brown has-text-light" data-target="navMenu"
 				aria-label="menu" aria-expanded="false">
-				<span aria-hidden="true"></span>
 				<span aria-hidden="true"></span>
 				<span aria-hidden="true"></span>
 			</a>
@@ -45,8 +49,8 @@
 			<div class="navbar-end">
 				<span class="py-4 pl-4 has-text-weight-light has-text-white is-size-6 is-size-7-touch"
 					id="featuresCount"></span>
-				<span
-					class="py-4 pl-1 has-text-weight-light has-text-white is-size-6 is-size-7-touch">{% include 'export.html' %}
+				<span class="py-4 pl-1 has-text-weight-light has-text-white is-size-6 is-size-7-touch">{% include
+					'export.html' %}
 				</span>
 
 				<span class="pt-4 pr-2 pl-4 has-text-weight-light has-text-white is-size-6 is-size-7-touch"><a

@@ -4,9 +4,11 @@ let cardImage = 'static/img/christian_church.png';
 let card;
 let activeMarkers = [];
 let defaultMarkerBorderColor = '#FFFFFF';
-let defaultMarkerFillColor = '#746044'; //#51412b
+let defaultMarkerFillColor = '#363636'; //#51412b
 const dataFilePow = baseUrl + '/api/pow/all';
 const dataFileOffice = baseUrl + '/api/office/all';
+const dataFileDeaneries = baseUrl + '/api/boundaries/all';
+const dataFileDeaneriesEmpty = baseUrl + '/api/boundaries/empty';
 const apiUrlPow = baseUrl + '/api/items/pow/';
 const apiUrlOffice = baseUrl + '/api/items/office/';
 const title = 'Obiekty religijne w Polsce';
@@ -33,6 +35,9 @@ let muslimMarkers = new L.FeatureGroup();
 let hinduMarkers = new L.FeatureGroup();
 let paganMarkers = new L.FeatureGroup();
 let otherReligonMarkers = new L.FeatureGroup();
+
+let deanariesMarkers = new L.FeatureGroup();
+let deanariesLabels = new L.FeatureGroup();
 
 const religions = {
     1: missingReligionTagMarkers,
@@ -76,7 +81,7 @@ var overlaysTree = {
                     layer: hinduMarkers
                 },
                 {
-                    label: "🛐 pogaństwo",
+                    label: "🛐 neopogaństwo",
                     layer: paganMarkers
                 },
                 {
@@ -131,7 +136,13 @@ var overlaysTree = {
                     layer: wrongServiceHoursValueMarkers
                 },
             ],
-        }
+        },
+        {
+            label: 'Podział religijny',
+            collapsed: true,
+            
+            children: [{label: 'Dekanaty', layer: deanariesMarkers,}]
+        },
     ]
 };
 
@@ -154,9 +165,6 @@ let geoUrl = dataFilePow + '/' + map.getBounds().toBBoxString();
 L.Permalink.setup(map);
 
 // Markers 
-// L.control.layers(false, overlayLayers).addTo(map);
-// L.control.layers(false, religionLayers).addTo(map);
-
 let circleMarkerStyle = {
     weight: 1,
     fillOpacity: 0.9,
@@ -289,7 +297,7 @@ function generateCardTemplate(id, apiFeature) {
                 };
                 showContribution(contributionInfo);
             } else if (image.startsWith(wikimediaCommonsPrefix) || image.startsWith(wikimediaCommonsShortPrefix)) {
-                let imageDecodedName = parseImageTag(image)
+                let imageDecodedName = parseImageTag(image);
                 let fullWikimediaUrl = getWikimediaCommonsUrl(imageDecodedName);
                 getWikimediaCommonsLicenseInfo(imageDecodedName);
                 headerImage = fullWikimediaUrl;
@@ -474,4 +482,56 @@ geojsonLayer.on('data:loaded', function () {
 if (activeCard == 0 && getFeatureIdFromHash(window.location.href) != null) {
     let id = getFeatureIdFromHash(window.location.href);
     getFeatureInfo('', id, apiUrlPow) || getFeatureInfo('', id, apiUrlOffice);
+}
+
+// Setting multipolygon layer and its label (label 'markers')
+var myStyle = {
+    "stroke": true,
+    "weight": 2,
+    "opacity": 1,
+    "color": "#363636",
+    "fill": false,
+    "interactive": false,
+};
+
+
+deaneriesLayer = new L.GeoJSON.AJAX(dataFileDeaneriesEmpty, {
+    style: myStyle,
+    onEachFeature: function(feature, layer) {
+      let label = L.marker(layer.getBounds().getCenter(), {
+        icon: L.divIcon({
+          opacity: 0.01,
+          className: 'has-text-weight-normal label has-text-centered has-text-white',
+          html: '<p style="font-size: 11px">' + feature.properties.tags.name + '</p>',
+          iconSize: [140, 20]
+        })
+      });
+      label.addTo(deanariesLabels);
+    }
+});
+
+deaneriesLayer.addTo(deanariesMarkers);
+map.on('overlayadd', onOverlayAdd); //
+map.on('layerremove', onOverlayRemove); 
+
+function onOverlayAdd(e){
+    if (map.hasLayer(deaneriesLayer))
+    {
+        if (deaneriesLayer.getLayers().length == 0)
+        {
+            deaneriesLayer.refresh(dataFileDeaneries);
+        }
+
+        if (!map.hasLayer(deanariesLabels))
+            {
+                    deanariesLabels.addTo(map);
+            }
+        }
+}
+
+function onOverlayRemove(e){
+    if (!map.hasLayer(deaneriesLayer))
+    {
+        map.removeLayer(deanariesLabels);
+    }
 }
