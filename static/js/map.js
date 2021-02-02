@@ -140,8 +140,11 @@ var overlaysTree = {
         {
             label: 'Podział religijny',
             collapsed: true,
-            
-            children: [{label: 'Dekanaty', layer: deanariesMarkers,}]
+
+            children: [{
+                label: 'Dekanaty',
+                layer: deanariesMarkers,
+            }]
         },
     ]
 };
@@ -497,41 +500,38 @@ var myStyle = {
 
 deaneriesLayer = new L.GeoJSON.AJAX(dataFileDeaneriesEmpty, {
     style: myStyle,
-    onEachFeature: function(feature, layer) {
-      let label = L.marker(layer.getBounds().getCenter(), {
-        icon: L.divIcon({
-          opacity: 0.01,
-          className: 'has-text-weight-normal label has-text-centered has-text-white',
-          html: '<p style="font-size: 11px">' + feature.properties.tags.name + '</p>',
-          iconSize: [140, 20]
-        })
-      });
-      label.addTo(deanariesLabels);
+    onEachFeature: function (feature, layer) {
+        let label = L.marker(layer.getBounds().getCenter(), {
+            icon: L.divIcon({
+                opacity: 0.01,
+                className: 'has-text-weight-normal label has-text-centered has-text-white',
+                html: '<p style="font-size: 11px">' + feature.properties.tags.name + '</p>',
+                iconSize: [140, 20]
+            })
+        });
+        label.addTo(deanariesLabels);
     }
 });
 
 deaneriesLayer.addTo(deanariesMarkers);
-map.on('overlayadd', onOverlayAdd); //
-map.on('layerremove', onOverlayRemove); 
 
-function onOverlayAdd(e){
-    if (map.hasLayer(deaneriesLayer))
-    {
-        if (deaneriesLayer.getLayers().length == 0)
-        {
+map.on('overlayadd', onOverlayAdd); //
+map.on('layerremove', onOverlayRemove);
+
+function onOverlayAdd(e) {
+    if (map.hasLayer(deaneriesLayer)) {
+        if (deaneriesLayer.getLayers().length == 0) {
             deaneriesLayer.refresh(dataFileDeaneries);
         }
 
-        if (!map.hasLayer(deanariesLabels))
-            {
-                    deanariesLabels.addTo(map);
-            }
+        if (!map.hasLayer(deanariesLabels)) {
+            deanariesLabels.addTo(map);
         }
+    }
 }
 
-function onOverlayRemove(e){
-    if (!map.hasLayer(deaneriesLayer))
-    {
+function onOverlayRemove(e) {
+    if (!map.hasLayer(deaneriesLayer)) {
         map.removeLayer(deanariesLabels);
     }
 }
