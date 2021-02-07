@@ -37,18 +37,18 @@ def simplify_geojson(file: str, simplify_ratio=0.3):
     with open(file_path, "r", encoding="utf-8") as json_file:
         try:
             data = json.load(json_file)
-            
+
             for feature in data["features"]:
                 geo = feature["geometry"]
                 feature["geometry"] = vw.simplify_geometry(geo, ratio=simplify_ratio)
-        
+
         except ValueError as e:
             logging.error(f"Value Error: {e}")
             return None
-    
+
     with open(file_path, "w", encoding="utf-8") as json_file:
-                json.dump(data, json_file)
-    
+        json.dump(data, json_file)
+
     return file
 
 
@@ -191,9 +191,8 @@ def overpass_to_geojson(
             return None
         try:
             logging.info("Start: Getting data and extracting to .geojson object..")
-            if response_type == 'json':
-                data = json.load(response.text)
-                geojson_response = json2geojson(data, log_level="ERROR")
+            if response_type == "json":
+                geojson_response = json2geojson(response.text, log_level="ERROR")
             else:
                 geojson_response = xml2geojson(response.text, log_level="ERROR")
         except:
@@ -279,7 +278,7 @@ def osm_tag_statistics(tag: str, source_db: str, col: str) -> list:
                         "count": {"$sum": 1},
                     }
                 },
-                {"$match": {"count": {"$gte": 2}}},
+                {"$match": {"count": {"$gte": 1}}},
                 {"$sort": {"count": -1}},
                 {"$limit": 100},
             ]
@@ -314,9 +313,9 @@ def statistics_to_html_file(tag_label: str, query_result: list, export_stats: st
     logging.info(f"Finish: Statistics saved to .html file: {export_folder}.")
 
 
-def export_date_to_html_file(import_date: date, export_html: str):
+def export_date_to_html_file(import_date: datetime, export_html: str):
     export_folder = Path(export_html)
-    paragraph = f"Ostatnia aktualizacja danych: {import_date}"
+    paragraph = f"🗓️ Ostatnia aktualizacja danych: {import_date}"
 
     with open(export_folder, "w", encoding="utf-8") as f:
         f.write(paragraph)

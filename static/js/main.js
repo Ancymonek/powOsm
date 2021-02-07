@@ -237,6 +237,41 @@ function setZoomStyle(zoom) {
     return options;
 }
 
+function setLabelZoomVisibility(zoom, zoomLevel, layer, layerLabel)
+{
+    if (zoom > zoomLevel) {
+        if (map.hasLayer(layer)) {
+            if (!map.hasLayer(layerLabel)) {
+                layerLabel.addTo(map);
+            }
+        }
+    } else {
+        if (map.hasLayer(layerLabel)) {
+            map.removeLayer(layerLabel);
+        }
+    }
+}
+
+function addActiveMarker(layer) {
+    activeMarkers.push(layer);
+    activeMarkers[0].setStyle({
+        color: defaultMarkerBorderColor,
+        fillColor: '#800000',
+        interactive: false
+    });
+}
+
+function clearActiveMarker(markerStyle) {
+    if (activeMarkers.length >= 1) {
+        // reset color 
+        activeMarkers[0].setStyle(markerStyle);
+        activeMarkers[0].setStyle({
+            interactive: true
+        });
+        activeMarkers.length = 0; // Clear array
+    }
+}
+
 //#endregion Geo+Map functions
 
 //#region Window functions

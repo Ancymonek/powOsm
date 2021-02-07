@@ -7,7 +7,8 @@ from decouple import config
 # Constants values
 POW_COLLECTION = "place_of_worship"
 OFFICE_COLLECTION = "office_religion"
-BOUNDARIES_COLLECTION = "religion_boundaries"
+DEANERY_COLLECTION = "deanery_boundaries"
+PARISH_COLLECTION = "parish_boundaries"
 OVERPASS_ENDPOINTS = [
     r"https://overpass-api.de/api/interpreter",
     r"https://overpass.kumi.systems/api/interpreter",
@@ -16,9 +17,12 @@ CACHE_TIME = 1440
 
 # Paths
 LOG_FILE = "data/logs/import.log"
-input_file_pow = "data/export_poland_new.json"
-input_file_office = "data/export_poland_office.json"
-input_file_boundary = "data/export_poland_boundary.json"
+# Nodes
+output_place_of_worship = "data/export_place_of_worship.json"
+output_office = "data/export_office.json"
+# Polygons
+output_deanery = "data/export_deanery.json"
+output_parish = "data/export_parish.json"
 
 # Logging set up
 logging.basicConfig(

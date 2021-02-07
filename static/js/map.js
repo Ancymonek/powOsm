@@ -4,19 +4,23 @@ let cardImage = 'static/img/christian_church.png';
 let card;
 let activeMarkers = [];
 let defaultMarkerBorderColor = '#FFFFFF';
-let defaultMarkerFillColor = '#363636'; //#51412b
+let defaultMarkerFillColor = '#363636';
 const dataFilePow = baseUrl + '/api/pow/all';
 const dataFileOffice = baseUrl + '/api/office/all';
-const dataFileDeaneries = baseUrl + '/api/boundaries/all';
-const dataFileDeaneriesEmpty = baseUrl + '/api/boundaries/empty';
+
+// Boundaries
+const dataFileDeaneries = baseUrl + '/api/deanery/all';
+const dataFileDeaneriesEmpty = baseUrl + '/api/deanery/empty';
+const dataFileParishes = baseUrl + '/api/parish/all';
+const dataFileParishesEmpty = baseUrl + '/api/parish/empty';
+
+// Items
 const apiUrlPow = baseUrl + '/api/items/pow/';
 const apiUrlOffice = baseUrl + '/api/items/office/';
 const title = 'Obiekty religijne w Polsce';
 const locale = (navigator.languages || [])[0] || navigator.userLanguage || navigator.language || navigator.browserLanguage || 'pl';
 
 // Marker groups
-let poiMarkers = new L.FeatureGroup();
-let officeMarkers = new L.FeatureGroup();
 let wrongNameMarkers = new L.FeatureGroup();
 let wrongShortnameMarkers = new L.FeatureGroup();
 let missingReligionTagMarkers = new L.FeatureGroup();
@@ -36,21 +40,73 @@ let hinduMarkers = new L.FeatureGroup();
 let paganMarkers = new L.FeatureGroup();
 let otherReligonMarkers = new L.FeatureGroup();
 
-let deanariesMarkers = new L.FeatureGroup();
-let deanariesLabels = new L.FeatureGroup();
+// POI's
+let poiMarkers = new L.FeatureGroup();
+let officeMarkers = new L.FeatureGroup();
 
-const religions = {
-    1: missingReligionTagMarkers,
-    2: christianMarkers,
-    3: jewishMarkers,
-    4: buddhismMarkers,
-    5: muslimMarkers,
-    6: hinduMarkers,
-    7: multifaithMarkers,
-    8: paganMarkers,
-    9: otherReligonMarkers
+// Boundaries
+let deaneriesMarkers = new L.FeatureGroup();
+let deaneriesLabels = new L.FeatureGroup();
+let parishesMarkers = new L.FeatureGroup();
+let parishesLabels = new L.FeatureGroup();
+
+// Permalink init
+let mapLoc = L.Permalink.getMapLocation();
+
+// Map
+let map = L.map('mapid', {
+    preferCanvas: true,
+    center: mapLoc.center,
+    minZoom: 7,
+    zoom: mapLoc.zoom,
+    zoomControl: false,
+    layers: [poiMarkers]
+});
+let geoUrl = dataFilePow + '/' + map.getBounds().toBBoxString();
+L.Permalink.setup(map);
+let circleMarkerStyle = {
+    weight: 1,
+    fillOpacity: 0.9,
+    color: defaultMarkerBorderColor,
+    fillColor: defaultMarkerFillColor,
 };
 
+// Map tileLayers
+let osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+});
+
+let osmHumanitarian = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+});
+
+var osmBw = L.tileLayer(
+    'http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }
+);
+//
+osm.addTo(map);
+
+var baseTree = {
+    label: 'Podkład mapowy 🗺️',
+    collapsed: true,
+    children: [{
+            label: 'OpenStreetMap',
+            layer: osm
+        },
+        {
+            label: 'OpenStreetMap Humanitarian',
+            layer: osmHumanitarian
+        },
+        {
+            label: 'Czarno-biała',
+            layer: osmBw
+        },
+    ]
+};
 
 var overlaysTree = {
     label: 'Obiekty religijne',
@@ -95,164 +151,76 @@ var overlaysTree = {
             ]
         },
         {
-            label: 'Kancelarie parafialne, biura 💼',
-            collapsed: true,
-            layer: officeMarkers,
-            children: []
-        },
-        {
             label: 'Obiekty do poprawy/uzupełnienia ✏️',
+            collapsed: true,
             selectAllCheckbox: 'Zaznacz/odznacz wszystkie',
             children: [{
-                    label: "Obiekty z literówkami w nazwie (Kościoł, Kościol itp.)",
+                    label: "Literówki w nazwie (Kościoł, Kościol itp.)",
                     layer: wrongNameMarkers
                 },
                 {
-                    label: "Obiekty ze skrótami do rozwinięcia/usunięcia (NMP, św. par., fil.) ",
+                    label: "Skróty do rozwinięcia/usunięcia (NMP, św. par., fil.) ",
                     layer: wrongShortnameMarkers
                 },
                 {
-                    label: "Obiekty bez określonego tagu 'religion'",
+                    label: "Brak tagu 'religion'",
                     layer: missingReligionTagMarkers
                 },
                 {
-                    label: "Obiekty bez określonego tagu 'denomination'",
+                    label: "Brak tagu 'denomination'",
                     layer: missingDenominationTagMarkers
                 },
                 {
-                    label: "Obiekty bez określonego tagu 'diocese'",
+                    label: "Brak tagu 'diocese'",
                     layer: missingDioceseTagMarkers
                 },
                 {
-                    label: "Obiekty bez określonego tagu 'deanery'",
+                    label: "Brak tagu 'deanery'",
                     layer: missingDeaneryTagMarkers
                 },
                 {
-                    label: "Obiekty z ogólnym tagiem budynku (building=yes)",
+                    label: "Ogólna wartość tagu budynku (building=yes)",
                     layer: missingBuildingNameValueMarkers
                 },
                 {
-                    label: "Obiekty z błędnymi tagami 'service_times' i 'opening_hours'",
+                    label: "Błędne wartości 'service_times'/'opening_hours'",
                     layer: wrongServiceHoursValueMarkers
                 },
             ],
         },
         {
+            label: 'Kancelarie parafialne, biura 💼',
+            collapsed: true,
+            layer: officeMarkers,
+            children: []
+        },
+
+        {
             label: 'Podział religijny',
             collapsed: true,
-
+            selectAllCheckbox: 'Zaznacz/odznacz wszystkie',
             children: [{
-                label: 'Dekanaty',
-                layer: deanariesMarkers,
-            }]
+                    label: 'Dekanaty',
+                    layer: deaneriesMarkers,
+                },
+                {
+                    label: 'Parafie',
+                    layer: parishesMarkers,
+                }
+            ]
         },
     ]
 };
 
 
-// Permalink init
-let mapLoc = L.Permalink.getMapLocation();
-
-// Map
-let map = L.map('mapid', {
-    preferCanvas: true,
-    center: mapLoc.center,
-    minZoom: 7,
-    zoom: mapLoc.zoom,
-    zoomControl: false,
-    layers: [poiMarkers]
-});
-let geoUrl = dataFilePow + '/' + map.getBounds().toBBoxString();
-
-// Permalink setup
-L.Permalink.setup(map);
-
-// Markers 
-let circleMarkerStyle = {
-    weight: 1,
-    fillOpacity: 0.9,
-    color: defaultMarkerBorderColor,
-    fillColor: defaultMarkerFillColor,
-};
-
-function addActiveMarker(layer) {
-    activeMarkers.push(layer);
-    activeMarkers[0].setStyle({
-        color: defaultMarkerBorderColor,
-        fillColor: '#800000',
-        interactive: false
-    });
-}
-
-function clearActiveMarker(markerStyle) {
-    if (activeMarkers.length >= 1) {
-        // reset color 
-        activeMarkers[0].setStyle(markerStyle);
-        activeMarkers[0].setStyle({
-            interactive: true
-        });
-        activeMarkers.length = 0; // Clear array
-    }
-}
-
-// Map tileLayers
-let osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-});
-
-let osmHumanitarian = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-});
-
-var osmBw = L.tileLayer(
-    'http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }
-);
-//
-osm.addTo(map);
-
-var baseTree = {
-    label: 'Podkład mapowy',
-    collapsed: true,
-    children: [{
-            label: 'OpenStreetMap',
-            layer: osm
-        },
-        {
-            label: 'OpenStreetMap Humanitarian',
-            layer: osmHumanitarian
-        },
-        {
-            label: 'Czarno-biała',
-            layer: osmBw
-        },
-    ]
-};
-L.control.layers.tree(baseTree, overlaysTree).addTo(map);
+controlLayersOptions = {closedSymbol: '<span class="has-text-weight-bold">+</span>', openedSymbol: '<span class="has-text-weight-bold">-</span>'};
+L.control.layers.tree(baseTree, overlaysTree, controlLayersOptions).addTo(map);
 
 // Zoom and map interaction
 let basicZoom = map.getZoom();
-
 L.control.zoom({
     position: 'bottomright'
 }).addTo(map);
-
-
-map.on('zoomend', function () {
-    let currentZoom = map.getZoom();
-    poiMarkers.setStyle(setZoomStyle(currentZoom));
-    officeMarkers.setStyle(setZoomStyle(currentZoom));
-});
-
-map.on('moveend', function () {
-    if (activeCard != 0) {
-        setFeatureIdHash(activeCard);
-    }
-});
-
 
 function generateCardTemplate(id, apiFeature) {
     if (apiFeature && id.substring(1) == apiFeature.properties.id) {
@@ -488,7 +456,7 @@ if (activeCard == 0 && getFeatureIdFromHash(window.location.href) != null) {
 }
 
 // Setting multipolygon layer and its label (label 'markers')
-var myStyle = {
+var boundaryStyle = {
     "stroke": true,
     "weight": 2,
     "opacity": 1,
@@ -499,7 +467,7 @@ var myStyle = {
 
 
 deaneriesLayer = new L.GeoJSON.AJAX(dataFileDeaneriesEmpty, {
-    style: myStyle,
+    style: boundaryStyle,
     onEachFeature: function (feature, layer) {
         let label = L.marker(layer.getBounds().getCenter(), {
             icon: L.divIcon({
@@ -509,14 +477,45 @@ deaneriesLayer = new L.GeoJSON.AJAX(dataFileDeaneriesEmpty, {
                 iconSize: [140, 20]
             })
         });
-        label.addTo(deanariesLabels);
+        label.addTo(deaneriesLabels);
     }
 });
 
-deaneriesLayer.addTo(deanariesMarkers);
+parishesLayer = new L.GeoJSON.AJAX(dataFileParishesEmpty, {
+    style: boundaryStyle,
+    onEachFeature: function (feature, layer) {
+        let label = L.marker(layer.getBounds().getCenter(), {
+            icon: L.divIcon({
+                opacity: 0.01,
+                className: 'has-text-weight-normal label has-text-centered has-text-white',
+                html: '<p style="font-size: 11px">' + feature.properties.tags.name + '</p>',
+                iconSize: [140, 20]
+            })
+        });
+        label.addTo(parishesLabels);
+    }
+});
 
-map.on('overlayadd', onOverlayAdd); //
+deaneriesLayer.addTo(deaneriesMarkers);
+parishesLayer.addTo(parishesMarkers);
+
+// Map changes
+map.on('zoomend', function () {
+    let currentZoom = map.getZoom();
+    poiMarkers.setStyle(setZoomStyle(currentZoom));
+    officeMarkers.setStyle(setZoomStyle(currentZoom));
+    setLabelZoomVisibility(currentZoom, 12, parishesLayer, parishesLabels);
+});
+map.on('moveend', function () {
+    if (activeCard != 0) {
+        setFeatureIdHash(activeCard);
+    }
+});
+map.on('overlayadd', onOverlayAdd);
 map.on('layerremove', onOverlayRemove);
+map.on('contextmenu',function(){
+    console.log('');
+});
 
 function onOverlayAdd(e) {
     if (map.hasLayer(deaneriesLayer)) {
@@ -524,14 +523,35 @@ function onOverlayAdd(e) {
             deaneriesLayer.refresh(dataFileDeaneries);
         }
 
-        if (!map.hasLayer(deanariesLabels)) {
-            deanariesLabels.addTo(map);
+        if (!map.hasLayer(deaneriesLabels)) {
+            deaneriesLabels.addTo(map);
         }
+    }
+    if (map.hasLayer(parishesLayer)) {
+        if (parishesLayer.getLayers().length == 0) {
+            parishesLayer.refresh(dataFileParishes);
+        }
+
+        /*  if (!map.hasLayer(parishesLabels)) {
+             parishesLabels.addTo(map);
+         } */
+    }
+}
+
+if (map.hasLayer(parishesLayer)) {
+    if (!map.hasLayer(parishesLabels)) {
+        parishesLabels.addTo(map);
     }
 }
 
 function onOverlayRemove(e) {
     if (!map.hasLayer(deaneriesLayer)) {
-        map.removeLayer(deanariesLabels);
+        map.removeLayer(deaneriesLabels);
     }
+
+    /* if (!map.hasLayer(parishesLayer)) {
+        map.removeLayer(parishesLabels);
+    } */
 }
+setLabelZoomVisibility(basicZoom, 12, parishesLayer, parishesLabels);
+

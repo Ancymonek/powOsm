@@ -325,7 +325,38 @@ const tagsDictionary = {
     'architect': {
         'en': 'architect',
         'pl': 'architekt' 
+    },
+    'wheelchair': {
+        'en': 'wheelchair access',
+        'pl': 'dostępność dla niepełnosprawnych' 
     }
+};
+
+const interfaceDictionary = {
+    'building': {
+        'en': 'building',
+        'pl': 'budynek'
+    },
+    'organization': {
+        'en': 'organization',
+        'pl': 'organizacja'
+    },
+    'address': {
+        'en': 'address',
+        'pl': 'adres'
+    },
+    'additional_info': {
+        'en': 'additional info',
+        'pl': 'dodatkowe informacje'
+    },
+    'contact': {
+        'en': 'contact',
+        'pl': 'kontakt'
+    },
+    'stats': {
+        'en': 'Statistics',
+        'pl': 'Statystyki'
+    },
 };
 
 function featureTags(apiFeature)
@@ -452,7 +483,7 @@ function featureTags(apiFeature)
             'value': tag(apiFeature, 'description') || ''
         },
         'wheelchair': {
-            'label': 'Dostępność dla niepełnosprawnych',
+            'label': label('wheelchair'),
             'value': tag(apiFeature, 'wheelchair') || ''
         },
         'image': {
@@ -474,3 +505,15 @@ function featureTags(apiFeature)
     };
     return tags;
 }
+
+const religions = {
+    1: missingReligionTagMarkers,
+    2: christianMarkers,
+    3: jewishMarkers,
+    4: buddhismMarkers,
+    5: muslimMarkers,
+    6: hinduMarkers,
+    7: multifaithMarkers,
+    8: paganMarkers,
+    9: otherReligonMarkers
+};

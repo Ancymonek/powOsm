@@ -6,6 +6,10 @@ body {
     overflow: hidden;
 }
 
+a:hover {
+    text-decoration: underline !important;
+}
+
 body {
     min-height: 100vh;
     min-height: -webkit-fill-available;
@@ -160,7 +164,8 @@ html {
 }
 
 .leaflet-control-layers-toggle {
-    background-image: url(../img/layers.png) !important;
+    background-image: url(../img/layer-group-solid.svg) !important;
+    background-size: 26px 26px;
 }
 
 .leaflet-control-layers-expanded {

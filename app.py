@@ -1,6 +1,5 @@
 import json
-from datetime import date
-from pathlib import Path
+import datetime
 
 from flask import Flask, render_template
 from flask_assets import Bundle, Environment
@@ -77,10 +76,8 @@ def feature(item_type: str, filter: str):
         collections = {
             "pow": [db[settings.POW_COLLECTION], False],
             "office": [db[settings.OFFICE_COLLECTION], False],
-            "boundaries": [
-                db[settings.BOUNDARIES_COLLECTION],
-                True,
-            ],  # True = keep osm tags
+            "deanery": [db[settings.DEANERY_COLLECTION],True],  # True = keep osm tags
+            "parish": [db[settings.PARISH_COLLECTION],True],
         }
 
         try:
@@ -124,7 +121,8 @@ def items(item_type: str, item_id: str):
     collections = {
         "pow": db[settings.POW_COLLECTION],
         "office": db[settings.OFFICE_COLLECTION],
-        "boundaries": db[settings.BOUNDARIES_COLLECTION],
+        "deanery": db[settings.DEANERY_COLLECTION],
+        "parish": db[settings.PARISH_COLLECTION],
     }
 
     try:
@@ -154,7 +152,7 @@ def items(item_type: str, item_id: str):
 @app.route("/import/<import_key>/<int:force>")
 def import_pow_geojson(import_key: str, force: int):
 
-    geojson_output_file = settings.input_file_pow
+    geojson_output_file = settings.output_place_of_worship
 
     if import_key != settings.import_key:
         return {"Result": 0, "Reason": "Incorrect key."}
@@ -208,7 +206,8 @@ def import_pow_geojson(import_key: str, force: int):
                 ),
                 "templates/building_stats.html",
             )
-            export_date_to_html_file(date.today(), "templates/export.html")
+            import_date = datetime.datetime.now().replace(second=0, microsecond=0)
+            export_date_to_html_file(import_date, "templates/export.html")
 
             return {"Result": 1}
         else:
@@ -220,7 +219,7 @@ def import_pow_geojson(import_key: str, force: int):
 @app.route("/import_office/<import_key>/<int:force>")
 def import_office_geojson(import_key: str, force: int):
 
-    geojson_output_file = settings.input_file_office
+    geojson_output_file = settings.output_office
 
     if import_key != settings.import_key:
         return {"Result": 0, "Reason": "Incorrect key."}
@@ -250,17 +249,16 @@ def import_office_geojson(import_key: str, force: int):
     return {"Result": 0, "Reason": "No changes"}
 
 
-@app.route("/import_boundary/<import_key>/<int:force>")
-def import_boundary_geojson(import_key: str, force: int):
+@app.route("/import_deanery/<import_key>/<int:force>")
+def import_deanery_geojson(import_key: str, force: int):
 
-    geojson_output_file = settings.input_file_boundary
+    geojson_output_file = settings.output_deanery
 
     if import_key != settings.import_key:
         return {"Result": 0, "Reason": "Incorrect key."}
 
     force = force == 1
 
-    # 2. Geojson file to MongoDB export
     execute = overpass_to_geojson(
         output_file=geojson_output_file,
         area_id=3600049715,
@@ -277,10 +275,46 @@ def import_boundary_geojson(import_key: str, force: int):
 
         # 2. Geojson file to MongoDB export
         geojson_to_mongodb(
-            geojson_output_file, settings.database, settings.BOUNDARIES_COLLECTION
+            geojson_output_file, settings.database, settings.DEANERY_COLLECTION
         )
 
-    return {"Result": 1}
+        return {"Result": 1}
+
+    return {"Result": 0, "Reason": "No changes"}
+
+
+@app.route("/import_parish/<import_key>/<int:force>")
+def import_parish_geojson(import_key: str, force: int):
+
+    geojson_output_file = settings.output_parish
+
+    if import_key != settings.import_key:
+        return {"Result": 0, "Reason": "Incorrect key."}
+
+    force = force == 1
+
+    execute = overpass_to_geojson(
+        output_file=geojson_output_file,
+        area_id=3600049715,
+        force_download=force,
+        response_type="xml",
+        out="geom",
+        boundary="religious_administration",
+        admin_level="10",
+    )
+
+    if execute:
+        # 1. Format .geojson file
+        geojson_output_file = simplify_geojson(geojson_output_file)
+
+        # 2. Geojson file to MongoDB export
+        geojson_to_mongodb(
+            geojson_output_file, settings.database, settings.PARISH_COLLECTION
+        )
+
+        return {"Result": 1}
+
+    return {"Result": 0, "Reason": "No changes"}
 
 
 if __name__ == "__main__":
