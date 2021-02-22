@@ -11,6 +11,7 @@ from pymongo import MongoClient
 import settings
 from data_import import (
     export_date_to_html_file,
+    simplify_geojson_geometry,
     simplify_geojson,
     filter_osm_geojson,
     geojson_to_mongodb,
@@ -171,6 +172,9 @@ def import_pow_geojson(import_key: str, force: int):
         # 1. Filter Geojson:
         geojson_file_processed = filter_osm_geojson(geojson_output_file)
 
+        # 2. Simplify geometry
+        geojson_file_processed = simplify_geojson_geometry(geojson_output_file)
+
         # 2. Geojson file to MongoDB export
         if geojson_file_processed:
             geojson_to_mongodb(
@@ -236,8 +240,10 @@ def import_office_geojson(import_key: str, force: int):
     if execute:
         # 1. Format .geojson file
         geojson_output_file = filter_osm_geojson(
-            geojson_output_file, tags=False, coords=True
+            geojson_output_file, tags=False
         )
+
+        geojson_output_file = simplify_geojson_geometry(geojson_output_file)
 
         # 2. Geojson file to MongoDB export
         geojson_to_mongodb(
@@ -318,6 +324,8 @@ def import_parish_geojson(import_key: str, force: int):
 
 
 if __name__ == "__main__":
+    app.jinja_env.auto_reload = True
+    app.config['TEMPLATES_AUTO_RELOAD'] = True
     app.run(debug=settings.debug_mode, host=settings.host)
 
 

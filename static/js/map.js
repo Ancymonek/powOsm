@@ -513,9 +513,6 @@ map.on('moveend', function () {
 });
 map.on('overlayadd', onOverlayAdd);
 map.on('layerremove', onOverlayRemove);
-map.on('contextmenu',function(){
-    console.log('');
-});
 
 function onOverlayAdd(e) {
     if (map.hasLayer(deaneriesLayer)) {

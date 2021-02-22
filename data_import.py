@@ -52,6 +52,28 @@ def simplify_geojson(file: str, simplify_ratio=0.3):
     return file
 
 
+def simplify_geojson_geometry(file: str, fp: int = 5):
+    file_path = Path(file)
+
+    with open(file_path, "r", encoding="utf-8") as json_file:
+        try:
+            data = json.load(json_file)
+
+            for feature in data["features"]:
+                feature["geometry"]["coordinates"] = format_coordinates(
+                    feature["geometry"]["coordinates"][0],
+                    feature["geometry"]["coordinates"][1], fp
+                )
+        except ValueError as e:
+            logging.error(f"Value Error: {e}")
+            return None
+
+        with open(file_path, "w", encoding="utf-8") as json_file:
+            json.dump(data, json_file)
+
+    return file
+
+
 def filter_osm_geojson(file: str, tags: bool = True, coords: bool = True) -> str:
     file_path = Path(file)
 
@@ -60,24 +82,18 @@ def filter_osm_geojson(file: str, tags: bool = True, coords: bool = True) -> str
             data = json.load(json_file)
 
             for feature in data["features"]:
-                if coords:
-                    feature["geometry"]["coordinates"] = format_coordinates(
-                        feature["geometry"]["coordinates"][0],
-                        feature["geometry"]["coordinates"][1],
-                    )
-
                 if tags:
                     # Format other values
                     for key, value in list(feature["properties"]["tags"].items()):
                         prop = feature["properties"]
                         if key == "name":
                             if (
-                                validate_input(value, pow_filter_values, ["kościoła"])
+                                validate_input(value, pow_filter_values, ("kościoła", "Kościoła", "Apostolat", "świetlica"))
                                 or value.isupper()
                             ):
                                 prop["n"] = 1
                             if validate_input(
-                                value, pow_filter_short_values, ["kościoła"]
+                                value, pow_filter_short_values, ("kościoła")
                             ):
                                 prop["s"] = 1
 
@@ -94,6 +110,7 @@ def filter_osm_geojson(file: str, tags: bool = True, coords: bool = True) -> str
 
                         if "religion" not in prop["tags"]:
                             prop["r"] = 1
+
                         if "denomination" not in prop["tags"]:
                             prop["d"] = 1
 
@@ -115,22 +132,21 @@ def filter_osm_geojson(file: str, tags: bool = True, coords: bool = True) -> str
 
 def validate_input(
     input_value: str,
-    filter_list: list,
-    excluded_value: list = [],
+    filter_set: set,
+    excluded_value: set = {},
     ignore_sensivity=True,
 ):
     words = input_value.split(sep=" ")
     matches = []
 
-    for filter in filter_list:
+    for elem in filter_set:
         for word in words:
             if ignore_sensivity and (
-                filter.lower() in word.lower()
-                and word.lower() not in map(str.lower, excluded_value)
+                elem.lower() in word.lower() and word.lower() not in list(map(str.lower, excluded_value))
             ):
                 matches.append(word)
             elif ignore_sensivity is False and (
-                filter in word and word not in excluded_value
+                elem in word and word not in excluded_value
             ):
                 matches.append(word)
 

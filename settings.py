@@ -5,6 +5,7 @@ from pathlib import Path
 from decouple import config
 
 # Constants values
+DATA_FOLDER = "data"
 POW_COLLECTION = "place_of_worship"
 OFFICE_COLLECTION = "office_religion"
 DEANERY_COLLECTION = "deanery_boundaries"
@@ -16,13 +17,15 @@ OVERPASS_ENDPOINTS = [
 CACHE_TIME = 1440
 
 # Paths
-LOG_FILE = "data/logs/import.log"
+LOG_FILE = f"{DATA_FOLDER}/logs/import.log"
+
 # Nodes
-output_place_of_worship = "data/export_place_of_worship.json"
-output_office = "data/export_office.json"
+output_place_of_worship = f"{DATA_FOLDER}/export_place_of_worship.json"
+output_office = f"{DATA_FOLDER}/export_office.json"
+
 # Polygons
-output_deanery = "data/export_deanery.json"
-output_parish = "data/export_parish.json"
+output_deanery = f"{DATA_FOLDER}/export_deanery.json"
+output_parish = f"{DATA_FOLDER}/export_parish.json"
 
 # Logging set up
 logging.basicConfig(
@@ -51,7 +54,7 @@ import_key = config("IMPORT_KEY")
 debug_mode = config("DEBUG")
 
 # Dicts
-pow_filter_values = (
+pow_filter_values = {
     "stajac",
     "świędsz",
     "Kościuł",
@@ -130,11 +133,14 @@ pow_filter_values = (
     "Archnioła",
     "archaniola",
     "michala",
-)
+    "Cerkiwe",
+    "Miłośi",
+}
 pow_filter_sensitive_values = "jezus"
 
-pow_filter_short_values = ("NMP", "MB", "M.B.", "św.", "bł.", "fil.", "par.", "kapl.")
-hours_filter_values = (
+pow_filter_short_values = {"NMP", "MB", "M.B.", "św.", "bł.", "fil.", "par.", "kapl."}
+
+hours_filter_values = {
     "niedziela",
     "lub",
     "miesi�ca",
@@ -158,7 +164,8 @@ hours_filter_values = (
     "sob",
     "�r",
     "nd",
-)
+}
+
 religion_mapping = {
     "none": 1,
     "christian": 2,
@@ -170,6 +177,7 @@ religion_mapping = {
     "pagan": 8,
     "other": 9,
 }
+
 missing_tags_mapping = {
     "religion": "r",
     "denomination": "d",

@@ -65,6 +65,10 @@ const valuesDictionary = {
         'en': 'evangelical',
         'pl': 'ewangelicyzm'
     },
+    'denomination:presbyterianism': {
+        'en': 'presbyterianism',
+        'pl': 'prezbiterianizm'
+    },
     'denomination:seventh_day_adventist': {
         'en': 'Seventh Day Adventist',
         'pl': 'Kościół Adwentystów Dnia Siódmego'
@@ -219,12 +223,29 @@ const valuesDictionary = {
         'pl': 'filialny',
         'en': 'filial'
     },
+    'church:type:garrison': {
+        'pl': 'garnizonowy',
+        'en': 'garrison'
+    },
+    'church:type:hospital': {
+        'pl': 'szpitalny',
+        'en': 'hospital'
+    },
     'church:type:rectoral': {
         'pl': 'pomocniczy',
         'en': 'rectoral'
     },
-    'church:type:monastery': {
-        'pl': 'klasztorny'
+    'church:type:monastic': {
+        'pl': 'klasztorny',
+        'en': 'klasztorny'
+    },
+    'church:type:prison': {
+        'pl': 'więzienny',
+        'en': 'prison'
+    },
+    'church:type:cemetery': {
+        'pl': 'cmentarny',
+        'en': 'cemetery'
     },
     'building:architecture:baroque': {
         'pl': 'barok',
