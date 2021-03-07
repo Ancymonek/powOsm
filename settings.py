@@ -8,6 +8,7 @@ from decouple import config
 DATA_FOLDER = "data"
 POW_COLLECTION = "place_of_worship"
 OFFICE_COLLECTION = "office_religion"
+MONASTERY_COLLECTION = "monastery_religion"
 DEANERY_COLLECTION = "deanery_boundaries"
 PARISH_COLLECTION = "parish_boundaries"
 OVERPASS_ENDPOINTS = [
@@ -22,6 +23,7 @@ LOG_FILE = f"{DATA_FOLDER}/logs/import.log"
 # Nodes
 output_place_of_worship = f"{DATA_FOLDER}/export_place_of_worship.json"
 output_office = f"{DATA_FOLDER}/export_office.json"
+output_monastery = f"{DATA_FOLDER}/export_monastery.json"
 
 # Polygons
 output_deanery = f"{DATA_FOLDER}/export_deanery.json"

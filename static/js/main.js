@@ -217,6 +217,16 @@ function getCoords(feature) {
     }
 }
 
+function getBbox(lat, long)
+{
+    let top = lat + 0.001144;
+    let bottom = lat - 0.001144;
+    let left = long - 0.00074;
+    let right = long + 0.00074;
+    let bbox = [left, top, right, bottom];
+    return bbox;
+}
+
 function setZoomStyle(zoom) {
     let interactiveMode;
     let myRadius;
@@ -271,7 +281,6 @@ function clearActiveMarker(markerStyle) {
         activeMarkers.length = 0; // Clear array
     }
 }
-
 //#endregion Geo+Map functions
 
 //#region Window functions
@@ -388,6 +397,16 @@ function getPoiOsmUrl(action, feature, editType) {
         core = "/" + featureType + "/" + featureId;
     }
     return osmUrl + core + postfix;
+}
+
+function getJosmEditUrl(feature)
+{
+    const JosmEditUrl = 'http://127.0.0.1:8111/';
+    let featureId = feature.properties.id;
+    let featureType = feature.properties.type;
+    let bbox = getBbox(getCoords(feature)[0], getCoords(feature)[1]);
+    let params = `load_and_zoom?left=${bbox[0]}&top=${bbox[1]}&right=${bbox[2]}&bottom=${bbox[3]}&select=${featureType}${featureId}&changeset_hashtags=MappingPOWInPoland`;
+    return JosmEditUrl + params;
 }
 
 function markerFilter(feature, layer) {

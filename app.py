@@ -223,10 +223,10 @@ def import_pow_geojson(import_key: str, force: int):
 @app.route("/import_office/<import_key>/<int:force>")
 def import_office_geojson(import_key: str, force: int):
 
-    geojson_output_file = settings.output_office
-
     if import_key != settings.import_key:
         return {"Result": 0, "Reason": "Incorrect key."}
+
+    geojson_output_file = settings.output_office
 
     force = force == 1
 
@@ -238,16 +238,41 @@ def import_office_geojson(import_key: str, force: int):
     )
 
     if execute:
-        # 1. Format .geojson file
-        geojson_output_file = filter_osm_geojson(
-            geojson_output_file, tags=False
-        )
-
         geojson_output_file = simplify_geojson_geometry(geojson_output_file)
 
         # 2. Geojson file to MongoDB export
         geojson_to_mongodb(
             geojson_output_file, settings.database, settings.OFFICE_COLLECTION
+        )
+
+        return {"Result": 1}
+
+    return {"Result": 0, "Reason": "No changes"}
+
+
+@app.route("/import_monastery/<import_key>/<int:force>")
+def import_monastery_geojson(import_key: str, force: int):
+
+    if import_key != settings.import_key:
+        return {"Result": 0, "Reason": "Incorrect key."}
+
+    geojson_output_file = settings.output_monastery
+
+    force = force == 1
+
+    execute = overpass_to_geojson(
+        output_file=geojson_output_file,
+        area_id=3600049715,
+        force_download=force,
+        amenity="monastery",
+    )
+
+    if execute:
+        geojson_output_file = simplify_geojson_geometry(geojson_output_file)
+
+        # 2. Geojson file to MongoDB export
+        geojson_to_mongodb(
+            geojson_output_file, settings.database, settings.MONASTERY_COLLECTION
         )
 
         return {"Result": 1}

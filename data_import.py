@@ -62,7 +62,8 @@ def simplify_geojson_geometry(file: str, fp: int = 5):
             for feature in data["features"]:
                 feature["geometry"]["coordinates"] = format_coordinates(
                     feature["geometry"]["coordinates"][0],
-                    feature["geometry"]["coordinates"][1], fp
+                    feature["geometry"]["coordinates"][1],
+                    fp,
                 )
         except ValueError as e:
             logging.error(f"Value Error: {e}")
@@ -74,7 +75,7 @@ def simplify_geojson_geometry(file: str, fp: int = 5):
     return file
 
 
-def filter_osm_geojson(file: str, tags: bool = True, coords: bool = True) -> str:
+def filter_osm_geojson(file: str) -> str:
     file_path = Path(file)
 
     with open(file_path, "r", encoding="utf-8") as json_file:
@@ -82,43 +83,44 @@ def filter_osm_geojson(file: str, tags: bool = True, coords: bool = True) -> str
             data = json.load(json_file)
 
             for feature in data["features"]:
-                if tags:
-                    # Format other values
-                    for key, value in list(feature["properties"]["tags"].items()):
-                        prop = feature["properties"]
-                        if key == "name":
-                            if (
-                                validate_input(value, pow_filter_values, ("kościoła", "Kościoła", "Apostolat", "świetlica"))
-                                or value.isupper()
-                            ):
-                                prop["n"] = 1
-                            if validate_input(
-                                value, pow_filter_short_values, ("kościoła")
-                            ):
-                                prop["s"] = 1
-
-                        if key == "religion":
-                            prop["r"] = religion_mapping[value]
-
-                        if key == "building" and value == "yes":
-                            prop["b"] = 1
-
-                        if key in ["opening_hours", "service_times"] and validate_input(
-                            value, hours_filter_values
+                # Format other values
+                for key, value in list(feature["properties"]["tags"].items()):
+                    prop = feature["properties"]
+                    if key == "name":
+                        if (
+                            validate_input(
+                                value,
+                                pow_filter_values,
+                                ("kościoła", "Kościoła", "Apostolat", "świetlica"),
+                            )
+                            or value.isupper()
                         ):
-                            prop["o"] = 1
+                            prop["n"] = 1
+                        if validate_input(value, pow_filter_short_values, ("kościoła")):
+                            prop["s"] = 1
 
-                        if "religion" not in prop["tags"]:
-                            prop["r"] = 1
+                    if key == "religion":
+                        prop["r"] = religion_mapping[value]
 
-                        if "denomination" not in prop["tags"]:
-                            prop["d"] = 1
+                    if key == "building" and value == "yes":
+                        prop["b"] = 1
 
-                        if "diocese" not in prop["tags"]:
-                            prop["i"] = 1
+                    if key in ["opening_hours", "service_times"] and validate_input(
+                        value, hours_filter_values
+                    ):
+                        prop["o"] = 1
 
-                        if "deanery" not in prop["tags"]:
-                            prop["e"] = 1
+                    if "religion" not in prop["tags"]:
+                        prop["r"] = 1
+
+                    if "denomination" not in prop["tags"]:
+                        prop["d"] = 1
+
+                    if "diocese" not in prop["tags"]:
+                        prop["i"] = 1
+
+                    if "deanery" not in prop["tags"]:
+                        prop["e"] = 1
 
         except ValueError as e:
             logging.error(f"Value Error: {e}")
@@ -142,7 +144,8 @@ def validate_input(
     for elem in filter_set:
         for word in words:
             if ignore_sensivity and (
-                elem.lower() in word.lower() and word.lower() not in list(map(str.lower, excluded_value))
+                elem.lower() in word.lower()
+                and word.lower() not in list(map(str.lower, excluded_value))
             ):
                 matches.append(word)
             elif ignore_sensivity is False and (

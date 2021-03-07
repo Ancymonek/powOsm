@@ -63,7 +63,9 @@ let map = L.map('mapid', {
     layers: [poiMarkers]
 });
 let geoUrl = dataFilePow + '/' + map.getBounds().toBBoxString();
+
 L.Permalink.setup(map);
+
 let circleMarkerStyle = {
     weight: 1,
     fillOpacity: 0.9,
@@ -87,7 +89,7 @@ var osmBw = L.tileLayer(
         attribution: '© OpenStreetMap contributors'
     }
 );
-//
+
 osm.addTo(map);
 
 var baseTree = {
@@ -212,9 +214,8 @@ var overlaysTree = {
     ]
 };
 
-
 controlLayersOptions = {closedSymbol: '<span class="has-text-weight-bold">+</span>', openedSymbol: '<span class="has-text-weight-bold">-</span>'};
-L.control.layers.tree(baseTree, overlaysTree, controlLayersOptions).addTo(map);
+var controlLayer = new L.control.layers.tree(baseTree, overlaysTree, controlLayersOptions).addTo(map);
 
 // Zoom and map interaction
 let basicZoom = map.getZoom();
@@ -236,7 +237,7 @@ function generateCardTemplate(id, apiFeature) {
 
         // buttons
         let osmEditUrlId = getPoiOsmUrl('edit', apiFeature, 'id');
-        let osmEditUrlRemote = getPoiOsmUrl('edit', apiFeature, 'remote');
+        let osmEditUrlRemote = getJosmEditUrl(apiFeature);
         let osmShowUrl = getPoiOsmUrl('details', apiFeature);
         let missingTags = [];
 
@@ -334,11 +335,12 @@ function generateCardTemplate(id, apiFeature) {
             denomination = 'ortodoksyjny';
         }
 
-
-        let cardContent = (buildingDiv.outerHTML || '') + (organizationDiv.outerHTML || '') + (addressDiv.outerHTML || '') + (contactDiv.outerHTML || '') + (moreInfoDiv.outerHTML || '');
+        let actionButtons = '<div class="is-pulled-right"><span class="tag is-link is-light"><a href="' + osmShowUrl + '" target="blank" rel="noopener">🔍 w OSM</a></span> <span class="tag is-link is-light"><a href="'+ osmEditUrlId +'" rel="noopener" target="_blank">📝 Edytuj (iD)</a></span> <span class="tag is-link is-light"><a href="' + osmEditUrlRemote + '" target="blank" rel="noopener">🔌 Edytuj (JOSM)</a></span></div>';
+        let cardContent = actionButtons + (buildingDiv.outerHTML || '') + (organizationDiv.outerHTML || '') + (addressDiv.outerHTML || '') + (contactDiv.outerHTML || '') + (moreInfoDiv.outerHTML || '');
         let title = tags.name.value;
         let subtitle = religion + ' ∘ ' + denomination;
-        let footer = showCardFooter(osmShowUrl, '🔍 w OSM', 'details', osmEditUrlId, '📝 Edytuj (iD)', 'edit', osmEditUrlRemote, '🔌 Edytuj (JOSM)', 'edit');
+        let footer = ''; //showCardFooter(osmShowUrl, '🔍 w OSM', 'details', osmEditUrlId, '📝 Edytuj (iD)', 'edit', osmEditUrlRemote, '🔌 Edytuj (JOSM)', 'edit'); - bottom panel removed due to feedback
+        
 
         card = L.control.card(cardContent, title, subtitle, headerImage, footer, {
             position: 'topleft'
@@ -552,3 +554,7 @@ function onOverlayRemove(e) {
 }
 setLabelZoomVisibility(basicZoom, 12, parishesLayer, parishesLabels);
 
+//localStorage.setItem('layers', ['a', 'b', 'b']);
+//const layers = localStorage.getItem('layers');
+//localStorage.clear();
+//console.log(layers);
