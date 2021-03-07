@@ -231,7 +231,7 @@ function setZoomStyle(zoom) {
     let interactiveMode;
     let myRadius;
 
-    if (zoom >= 14) {
+    if (zoom >= 10) {
         myRadius = zoom * 0.6;
         interactiveMode = true;
     } else {
