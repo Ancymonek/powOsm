@@ -52,6 +52,10 @@ html {
     z-index: 1002 !important;
 }
 
+.content{
+    padding-bottom: 6px !important;
+}
+
 @media (min-width: 769px) {
     .poi-card {
         margin: 1rem !important;

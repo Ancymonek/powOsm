@@ -60,9 +60,9 @@ function showBulmaNotification(level, text, light) {
     }
 
     let div = document.createElement('div');
-    div.setAttribute('class', 'ml-2 mr-2 notification is-' + level + ' ' + light);
+    div.setAttribute('class', 'ml-1 mt-3 mr-1 is-pulled-right is-size-6 notification is-' + level + ' ' + light);
     div.setAttribute('style', 'z-index: 9999 !important;');
-    div.textContent = text || '';
+    div.innerHTML = text || '';
     return div.outerHTML;
 }
 
@@ -217,13 +217,12 @@ function getCoords(feature) {
     }
 }
 
-function getBbox(lat, long)
-{
+function getBbox(lat, long) {
     let top = lat + 0.001144;
     let bottom = lat - 0.001144;
     let left = long - 0.00074;
     let right = long + 0.00074;
-    let bbox = [left, top, right, bottom];
+    let bbox = [left.toFixed(5), top.toFixed(5), right.toFixed(5), bottom.toFixed(5)];
     return bbox;
 }
 
@@ -247,8 +246,7 @@ function setZoomStyle(zoom) {
     return options;
 }
 
-function setLabelZoomVisibility(zoom, zoomLevel, layer, layerLabel)
-{
+function setLabelZoomVisibility(zoom, zoomLevel, layer, layerLabel) {
     if (zoom > zoomLevel) {
         if (map.hasLayer(layer)) {
             if (!map.hasLayer(layerLabel)) {
@@ -317,7 +315,7 @@ function setFeatureIdHash(id, replace) {
 }
 //#endregion Window functions
 
-//#region OSM Data processing
+//#region OSM
 
 function translateValue(dict, tagName, property) {
     let translated = '';
@@ -399,8 +397,7 @@ function getPoiOsmUrl(action, feature, editType) {
     return osmUrl + core + postfix;
 }
 
-function getJosmEditUrl(feature)
-{
+function getJosmEditUrl(feature) {
     const JosmEditUrl = 'http://127.0.0.1:8111/';
     let featureId = feature.properties.id;
     let featureType = feature.properties.type;
@@ -443,7 +440,15 @@ function markerFilter(feature, layer) {
         layer.addTo(religions[feature.properties.r]);
     }
 }
-//#endregion Values processing
+
+function editInJosm(url) {
+    var request = new XMLHttpRequest();
+    request.open("GET", url);
+    request.send();
+}
+
+
+//#endregion OSM
 
 //#region Wikimedia functions
 

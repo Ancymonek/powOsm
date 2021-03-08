@@ -303,7 +303,11 @@ function generateCardTemplate(id, apiFeature) {
             showTag('description') + showTag('wheelchair', '', ' <sup>♿</sup>');
 
         // Setting visibility of particular sections - refactoring needed
-        if (!tags.building.value) {} else {
+        if (!tags.building.value) {
+            missingTags.push('budynek');
+        } 
+        else 
+        {
             buildingDiv.innerHTML = showSectionHeader('budynek') + buildingDiv.innerHTML;
         }
         if (!organizationDiv.innerHTML) {
@@ -327,6 +331,11 @@ function generateCardTemplate(id, apiFeature) {
             moreInfoDiv.innerHTML = showSectionHeader('dodatkowe informacje') + moreInfoDiv.innerHTML;
         }
 
+        if (missingTags.length == 5)
+        {
+            var notification = showBulmaNotification('warning', 'Niestety obiekt nie posiada szczegółowych tagów (<a href="https://wiki.openstreetmap.org/wiki/Pl:Tag:amenity%3Dplace_of_worship#U.C5.BCycie" target="_blank" rel="noopener">Zobacz przykład użycia na Wiki</a>). Użyj przycisków edycji do uzupełnienia danych o obiekcie.', true);
+        }
+
         let religion = (tags.religion.value || showHint('Brak tagu określającego religię (np. religion = roman_catholic) - uzupełnij'));
         let denomination = (tags.denomination.value || showHint('Brak tagu określającego wyznanie religijne - np. denomination = roman_cat'));
 
@@ -335,8 +344,8 @@ function generateCardTemplate(id, apiFeature) {
             denomination = 'ortodoksyjny';
         }
 
-        let actionButtons = '<div class="is-pulled-right"><span class="tag is-link is-light"><a href="' + osmShowUrl + '" target="blank" rel="noopener">🔍 w OSM</a></span> <span class="tag is-link is-light"><a href="'+ osmEditUrlId +'" rel="noopener" target="_blank">📝 Edytuj (iD)</a></span> <span class="tag is-link is-light"><a href="' + osmEditUrlRemote + '" target="blank" rel="noopener">🔌 Edytuj (JOSM)</a></span></div>';
-        let cardContent = actionButtons + (buildingDiv.outerHTML || '') + (organizationDiv.outerHTML || '') + (addressDiv.outerHTML || '') + (contactDiv.outerHTML || '') + (moreInfoDiv.outerHTML || '');
+        let actionButtons = '<div class="is-pulled-right"><span class="tag is-link is-light"><a href="' + osmShowUrl + '" target="blank" rel="noopener">🔍 w OSM</a></span> <span class="tag is-link is-light"><a href="'+ osmEditUrlId +'" rel="noopener" target="_blank">📝 Edytuj (iD)</a></span> <span class="tag is-link is-light"><a href="#" onclick="editInJosm(\'' + osmEditUrlRemote + '\')">🔌 Edytuj (JOSM)</a></span></div>';
+        let cardContent = actionButtons + (notification || '') + (buildingDiv.outerHTML || '') + (organizationDiv.outerHTML || '') + (addressDiv.outerHTML || '') + (contactDiv.outerHTML || '') + (moreInfoDiv.outerHTML || '');
         let title = tags.name.value;
         let subtitle = religion + ' ∘ ' + denomination;
         let footer = ''; //showCardFooter(osmShowUrl, '🔍 w OSM', 'details', osmEditUrlId, '📝 Edytuj (iD)', 'edit', osmEditUrlRemote, '🔌 Edytuj (JOSM)', 'edit'); - bottom panel removed due to feedback
