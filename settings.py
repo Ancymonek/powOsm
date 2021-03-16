@@ -132,6 +132,7 @@ pow_filter_values = {
     "wszytk",
     "p.w.",
     "pw ",
+    "p/w",
     "Stansiława",
     "Archnioła",
     "archaniola",
@@ -139,6 +140,7 @@ pow_filter_values = {
     "Cerkiwe",
     "Miłośi",
     "filianlny",
+    "filarny"
 }
 pow_filter_sensitive_values = "jezus"
 

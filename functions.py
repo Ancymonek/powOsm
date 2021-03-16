@@ -23,6 +23,7 @@ def docache(minutes=1440, content_type="application/json; charset=utf-8"):
 
     return fwrap
 
+
 def timeit(func):
     @wraps(func)
     def newfunc(*args, **kwargs):
@@ -30,13 +31,15 @@ def timeit(func):
         func(*args, **kwargs)
         elapsedTime = time.time() - startTime
         logging.info(func.__name__, int(elapsedTime * 1000))
+
     return newfunc
 
+
 def diff(file_new, file_old):
-    with open(file_new,'r') as file:
+    with open(file_new, 'r') as file:
         file1 = json.load(file)
 
-    with open(file_old,'r') as file:
+    with open(file_old, 'r') as file:
         file2 = json.load(file)
 
     new_features = []
@@ -47,7 +50,7 @@ def diff(file_new, file_old):
         tags['id'] = id
         new_tags.append(tags)
         new_features.append(id)
-    
+
     old_features = []
     old_tags = []
     for feature_old in file2["features"]:
@@ -56,7 +59,7 @@ def diff(file_new, file_old):
         tags['id'] = id
         old_tags.append(tags)
         old_features.append(id)
-    
+
     new_features_diff = set(new_features) - set(old_features)
     deleted_features_diff = set(old_features) - set(new_features)
 
@@ -68,9 +71,9 @@ def diff(file_new, file_old):
                     diff_items.append(elem_new['id'])
 
     result = {
-              'new_features': new_features_diff, 
-              'deleted_features': deleted_features_diff,
-              'modified_features': diff_items
-              }
+        'new_features': new_features_diff,
+        'deleted_features': deleted_features_diff,
+        'modified_features': diff_items
+    }
 
     return result
