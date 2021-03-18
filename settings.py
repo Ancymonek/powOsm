@@ -140,7 +140,11 @@ pow_filter_values = {
     "Cerkiwe",
     "Miłośi",
     "filianlny",
-    "filarny"
+    "filarny",
+    "⛪",
+    "Matrki",
+    "Śiwętego",
+    "Kalica"
 }
 pow_filter_sensitive_values = "jezus"
 
