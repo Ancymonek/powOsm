@@ -276,8 +276,17 @@ const valuesDictionary = {
         'en': 'renaissance'
     },
     'building:architecture:modern': {
+        'en': 'modern',
         'pl': 'nowoczesna'
-    }
+    },
+    'community:gender:male': {
+        'en': 'male',
+        'pl': 'męski'
+    },
+    'community:gender:female': {
+        'en': 'female',
+        'pl': 'żeński'
+    },
 
 };
 
@@ -350,7 +359,15 @@ const tagsDictionary = {
     'wheelchair': {
         'en': 'wheelchair access',
         'pl': 'dostępność dla niepełnosprawnych' 
-    }
+    },
+    'community': {
+        'en': 'community',
+        'pl': 'skrót zakonny' 
+    },
+    'community:gender': {
+        'en': 'community gender',
+        'pl': 'typ zakonu' 
+    },
 };
 
 const interfaceDictionary = {
@@ -430,6 +447,14 @@ function featureTags(apiFeature)
         'openingHours': {
             'label': label('opening_hours'),
             'value': parseOpeningHours(tag(apiFeature, 'opening_hours')) || ''
+        },
+        'community': {
+            'label': label('community'),
+            'value': tag(apiFeature, 'community') || ''
+        },
+        'communityGender': {
+            'label': label('community:gender'),
+            'value': tag(apiFeature, 'community:gender') || ''
         },
         'building': {
             'label': label('building'),

@@ -3,24 +3,16 @@ from builtins import FileNotFoundError
 from datetime import date, datetime
 
 import geojson
-from osm2geojson.main import xml2geojson
 import requests
-from osm2geojson import json2geojson
 import visvalingamwyatt as vw
+from osm2geojson import json2geojson
+from osm2geojson.main import xml2geojson
 from pymongo import GEOSPHERE, TEXT, MongoClient
 from pymongo.errors import BulkWriteError
 
-from settings import (
-    OVERPASS_ENDPOINTS,
-    Path,
-    logging,
-    pow_filter_short_values,
-    pow_filter_values,
-    hours_filter_values,
-    uri,
-    religion_mapping,
-    missing_tags_mapping,
-)
+from settings import (OVERPASS_ENDPOINTS, Path, hours_filter_values, logging,
+                      missing_tags_mapping, pow_filter_short_values,
+                      pow_filter_values, religion_mapping, uri)
 
 
 def format_coordinates(lat, long, fp: int = 5):

@@ -15,7 +15,15 @@ OVERPASS_ENDPOINTS = [
     r"https://overpass-api.de/api/interpreter",
     r"https://overpass.kumi.systems/api/interpreter",
 ]
-CACHE_TIME = 1440
+CACHE_TIME = 720 # 12 hours
+
+layers = {
+    "place_of_worship": {
+        "name": "Places of worship in Poland",
+        "collection": "place_of_worship",
+        "output_file": f"{DATA_FOLDER}/export_place_of_worship.json",
+    }
+}
 
 # Paths
 LOG_FILE = f"{DATA_FOLDER}/logs/import.log"
@@ -144,7 +152,8 @@ pow_filter_values = {
     "⛪",
     "Matrki",
     "Śiwętego",
-    "Kalica"
+    "Kalica",
+    "Zespoł"
 }
 pow_filter_sensitive_values = "jezus"
 

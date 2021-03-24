@@ -1,24 +1,16 @@
-import json
 import datetime
+import json
 
 from flask import Flask, render_template
 from flask_assets import Bundle, Environment
 from geojson import FeatureCollection
-from osm2geojson import json2geojson
-from osm2geojson.main import json2geojson, json2shapes
 from pymongo import MongoClient
 
 import settings
-from data_import import (
-    export_date_to_html_file,
-    simplify_geojson_geometry,
-    simplify_geojson,
-    filter_osm_geojson,
-    geojson_to_mongodb,
-    osm_tag_statistics,
-    overpass_to_geojson,
-    statistics_to_html_file,
-)
+from data_import import (export_date_to_html_file, filter_osm_geojson,
+                         geojson_to_mongodb, osm_tag_statistics,
+                         overpass_to_geojson, simplify_geojson,
+                         simplify_geojson_geometry, statistics_to_html_file)
 from functions import docache
 
 app = Flask(__name__)
@@ -77,6 +69,7 @@ def feature(item_type: str, filter: str):
         collections = {
             "pow": [db[settings.POW_COLLECTION], False],
             "office": [db[settings.OFFICE_COLLECTION], False],
+            "monastery": [db[settings.MONASTERY_COLLECTION], False],
             "deanery": [db[settings.DEANERY_COLLECTION],True],  # True = keep osm tags
             "parish": [db[settings.PARISH_COLLECTION],True],
         }
@@ -116,12 +109,14 @@ def feature(item_type: str, filter: str):
 
 
 @app.route("/api/items/<item_type>/<item_id>")
+@docache(minutes=settings.CACHE_TIME, content_type="application/json")
 def items(item_type: str, item_id: str):
     db = client[settings.database]
 
     collections = {
         "pow": db[settings.POW_COLLECTION],
         "office": db[settings.OFFICE_COLLECTION],
+        "monastery": db[settings.MONASTERY_COLLECTION],
         "deanery": db[settings.DEANERY_COLLECTION],
         "parish": db[settings.PARISH_COLLECTION],
     }
@@ -140,14 +135,19 @@ def items(item_type: str, item_id: str):
     elif feature_type == "r":
         feature_type = "relation"
     else:
-        return None
+        return {"Result": 0, "Reason": "404. Wrong feature Type"}
 
-    item_id = int(item_id[1:])
-
-    return collection.find_one(
+    try:
+        item_id = int(item_id[1:])
+        result = collection.find_one(
         {"$and": [{"properties.id": item_id, "properties.type": feature_type}]},
-        {"_id": 0},
-    )
+        {"_id": 0},)
+        if result is None:
+            return {"Result": 0, "Reason": "No object of this type/id combination have been found"}
+    except TypeError:
+        return {"Result": 0, "Reason": "404. Wrong ID"}
+
+    return json.dumps(result, separators=(",", ":"))
 
 
 @app.route("/import/<import_key>/<int:force>")
@@ -352,47 +352,3 @@ if __name__ == "__main__":
     app.jinja_env.auto_reload = True
     app.config['TEMPLATES_AUTO_RELOAD'] = True
     app.run(debug=settings.debug_mode, host=settings.host)
-
-
-""" 
-# implementacja pobierania danych z api po bboxie - na przyszłość
-@app.route("/api/features/<bbox>")
-def features(bbox: str):
-    db = client[settings.database]
-    features_collection = db[settings.POW_COLLECTION]
-
-    bbox = bbox.split(",")
-    bbox = [float(x) for x in bbox]
-
-    if len(bbox) != 4:
-        return None
-
-    result_geo = features_collection.find(
-        {
-            "geometry.coordinates": {
-                "$geoWithin": {"$box": [[bbox[2], bbox[3]], [bbox[0], bbox[1]]]}
-            }
-        },
-        {"_id": False, "properties.tags": False},
-    )
-
-    features = []
-    for feature in list(result_geo):
-        feature_type = (
-            feature["properties"]["type"][0].lower()
-            + ""
-            + str(feature["properties"]["id"])
-        )
-        feature["properties"]["id"] = feature_type
-
-        lat, long = float("%.5f" % feature["geometry"]["coordinates"][0]), float(
-            "%.5f" % feature["geometry"]["coordinates"][1]
-        )
-        feature["geometry"]["coordinates"] = [lat, long]
-        del feature["properties"]["type"]
-
-        features.append(feature)
-
-    features_collection = FeatureCollection(features)
-    return features_collection
- """

@@ -7,6 +7,7 @@ let defaultMarkerBorderColor = '#FFFFFF';
 let defaultMarkerFillColor = '#363636';
 const dataFilePow = baseUrl + '/api/pow/all';
 const dataFileOffice = baseUrl + '/api/office/all';
+const dataFileMonastery = baseUrl + '/api/monastery/all';
 
 // Boundaries
 const dataFileDeaneries = baseUrl + '/api/deanery/all';
@@ -17,6 +18,7 @@ const dataFileParishesEmpty = baseUrl + '/api/parish/empty';
 // Items
 const apiUrlPow = baseUrl + '/api/items/pow/';
 const apiUrlOffice = baseUrl + '/api/items/office/';
+const apiUrlMonastery = baseUrl + '/api/items/monastery/';
 const title = 'Obiekty religijne w Polsce';
 const locale = (navigator.languages || [])[0] || navigator.userLanguage || navigator.language || navigator.browserLanguage || 'pl';
 
@@ -43,6 +45,7 @@ let otherReligonMarkers = new L.FeatureGroup();
 // POI's
 let poiMarkers = new L.FeatureGroup();
 let officeMarkers = new L.FeatureGroup();
+let monasteryMarkers = new L.FeatureGroup();
 
 // Boundaries
 let deaneriesMarkers = new L.FeatureGroup();
@@ -71,6 +74,13 @@ let circleMarkerStyle = {
     fillOpacity: 0.9,
     color: defaultMarkerBorderColor,
     fillColor: defaultMarkerFillColor,
+};
+
+let circleMarkerStyleMonastery = {
+    weight: 1,
+    fillOpacity: 0.9,
+    color: defaultMarkerBorderColor,
+    fillColor: '#545454',
 };
 
 // Map tileLayers
@@ -196,6 +206,12 @@ var overlaysTree = {
             layer: officeMarkers,
             children: []
         },
+        {
+            label: 'Zakony 📿',
+            collapsed: true,
+            layer: monasteryMarkers,
+            children: []
+        },
 
         {
             label: 'Podział religijny',
@@ -292,7 +308,7 @@ function generateCardTemplate(id, apiFeature) {
             showTag('architect') + showTag('buildingArchitecture');
 
 
-        organizationDiv.innerHTML = showTag('churchType') + showTag('operator') + showTag('diocese') + showTag('deanery') + showTag('serviceTimes') + showTag('openingHours');
+        organizationDiv.innerHTML = showTag('churchType') + showTag('operator') + showTag('diocese') + showTag('deanery') + showTag('serviceTimes') + showTag('openingHours') + showTag('community') + showTag('communityGender');
 
         addressDiv.innerHTML = `${showSectionHeader('adres')}<p class="mb-1 ml-2">${tags.street.value}&nbsp;${tags.houseNumber.value},&nbsp;${tags.postCode.value}&nbsp;${tags.city.value || tags.place.value }</p>`;
 
@@ -453,6 +469,30 @@ let officeLayer = new L.GeoJSON.AJAX(dataFileOffice, {
     onEachFeature: onEachFeatureClosure(apiUrlOffice),
 });
 
+let monasteryLayer = new L.GeoJSON.AJAX(dataFileMonastery, {
+    pointToLayer: function (feature, latlng) {
+        let marker = L.circleMarker(getCoords(feature)).setStyle(circleMarkerStyle);
+        marker.setStyle(setZoomStyle(basicZoom));
+
+        //active marker (open card)
+        if (feature.properties.id == getFeatureIdFromHash(window.location.href)) {
+            addActiveMarker(marker);
+        }
+
+        // stupid fix - to refactor
+        marker.on('mouseover', function () {
+            if (feature.properties.id == getFeatureIdFromHash(window.location.href)) {
+                addActiveMarker(marker);
+            }
+        });
+
+        marker.addTo(monasteryMarkers);
+        return marker;
+    },
+    onEachFeature: onEachFeatureClosure(apiUrlMonastery),
+});
+
+// Count only POW objects
 geojsonLayer.on('data:loaded', function () {
     layerObjects = poiMarkers.getLayers().length;
     if (layerObjects) {
@@ -463,7 +503,7 @@ geojsonLayer.on('data:loaded', function () {
 // Show card if url has valid id
 if (activeCard == 0 && getFeatureIdFromHash(window.location.href) != null) {
     let id = getFeatureIdFromHash(window.location.href);
-    getFeatureInfo('', id, apiUrlPow) || getFeatureInfo('', id, apiUrlOffice);
+    getFeatureInfo('', id, apiUrlPow) || getFeatureInfo('', id, apiUrlOffice) || getFeatureInfo('', id, apiUrlMonastery);
 }
 
 // Setting multipolygon layer and its label (label 'markers')
@@ -510,11 +550,15 @@ parishesLayer = new L.GeoJSON.AJAX(dataFileParishesEmpty, {
 deaneriesLayer.addTo(deaneriesMarkers);
 parishesLayer.addTo(parishesMarkers);
 
-// Map changes
+// Map state changes
 map.on('zoomend', function () {
     let currentZoom = map.getZoom();
+
+    //POI markers
     poiMarkers.setStyle(setZoomStyle(currentZoom));
     officeMarkers.setStyle(setZoomStyle(currentZoom));
+    monasteryMarkers.setStyle(setZoomStyle(currentZoom));
+
     setLabelZoomVisibility(currentZoom, 12, parishesLayer, parishesLabels);
 });
 map.on('moveend', function () {
@@ -525,6 +569,7 @@ map.on('moveend', function () {
 map.on('overlayadd', onOverlayAdd);
 map.on('layerremove', onOverlayRemove);
 
+// Handling multipolygon layers and labels
 function onOverlayAdd(e) {
     if (map.hasLayer(deaneriesLayer)) {
         if (deaneriesLayer.getLayers().length == 0) {
@@ -539,10 +584,6 @@ function onOverlayAdd(e) {
         if (parishesLayer.getLayers().length == 0) {
             parishesLayer.refresh(dataFileParishes);
         }
-
-        /*  if (!map.hasLayer(parishesLabels)) {
-             parishesLabels.addTo(map);
-         } */
     }
 }
 
@@ -556,14 +597,5 @@ function onOverlayRemove(e) {
     if (!map.hasLayer(deaneriesLayer)) {
         map.removeLayer(deaneriesLabels);
     }
-
-    /* if (!map.hasLayer(parishesLayer)) {
-        map.removeLayer(parishesLabels);
-    } */
 }
 setLabelZoomVisibility(basicZoom, 12, parishesLayer, parishesLabels);
-
-//localStorage.setItem('layers', ['a', 'b', 'b']);
-//const layers = localStorage.getItem('layers');
-//localStorage.clear();
-//console.log(layers);
