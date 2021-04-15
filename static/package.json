@@ -13,6 +13,7 @@
     "bulma": "^0.9.1",
     "leaflet": "^1.7.1",
     "leaflet-ajax": "^2.1.0",
-    "leaflet.control.layers.tree": "^1.0.2"
+    "leaflet.control.layers.tree": "^1.0.2",
+    "tabulator-tables": "^4.9.3"
   }
 }

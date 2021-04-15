@@ -4,13 +4,23 @@ import json
 from flask import Flask, render_template
 from flask_assets import Bundle, Environment
 from geojson import FeatureCollection
+import geojson
 from pymongo import MongoClient
 
 import settings
-from data_import import (export_date_to_html_file, filter_osm_geojson,
-                         geojson_to_mongodb, osm_tag_statistics,
-                         overpass_to_geojson, simplify_geojson,
-                         simplify_geojson_geometry, statistics_to_html_file)
+from data_import import (
+    export_date_to_html_file,
+    filter_osm_geojson,
+    geojson_to_mongodb,
+    osm_tag_statistics,
+    overpass_to_geojson,
+    simplify_geojson,
+    simplify_geojson_geometry,
+    statistics_to_html_file,
+    suggest_tags,
+    compare_osm_wikidata,
+    generate_josm_url,
+)
 from functions import docache
 
 app = Flask(__name__)
@@ -56,6 +66,11 @@ def index():
     return render_template("index.html")
 
 
+@app.route("/table")
+def table():
+    return render_template("datatable.html")
+
+
 @app.route("/api/<item_type>/<filter>")
 @docache(minutes=settings.CACHE_TIME, content_type="application/json")
 def feature(item_type: str, filter: str):
@@ -70,8 +85,8 @@ def feature(item_type: str, filter: str):
             "pow": [db[settings.POW_COLLECTION], False],
             "office": [db[settings.OFFICE_COLLECTION], False],
             "monastery": [db[settings.MONASTERY_COLLECTION], False],
-            "deanery": [db[settings.DEANERY_COLLECTION],True],  # True = keep osm tags
-            "parish": [db[settings.PARISH_COLLECTION],True],
+            "deanery": [db[settings.DEANERY_COLLECTION], True],  # True = keep osm tags
+            "parish": [db[settings.PARISH_COLLECTION], True],
         }
 
         try:
@@ -108,6 +123,47 @@ def feature(item_type: str, filter: str):
         return None
 
 
+@app.route("/api/list/")
+@docache(minutes=settings.CACHE_TIME, content_type="application/json")
+def list_items():
+    db = client[settings.database]
+    pow = db[settings.POW_COLLECTION]
+    collection = pow
+    query_settings = {"_id": False}
+    result = collection.find({}, query_settings)
+
+    items = []
+    for feature in list(result):
+        # print(feature['properties'])
+        prop = feature["properties"]
+        st = suggest_tags(feature)
+        wikidata_id = prop.get("wid") or "" if not prop["tags"].get("wikidata") else ""
+        wikidata_name =  prop.get("wn") or "" if not prop["tags"].get("wikidata") else ""
+
+        item = {
+            "id": prop["type"][0] + str(prop["id"]),
+            "name": prop["tags"].get("name") or "",
+            "alt_name": prop["tags"].get("alt_name") or "",
+            "religion": prop["tags"].get("religion") or "",
+            "denomination": prop["tags"].get("denomination") or "",
+            "diocese": prop["tags"].get("diocese") or "",
+            "deanery": prop["tags"].get("deanery") or "",
+            "wikidata": prop["tags"].get("wikidata") or "",
+            "suggested_tags": st,
+            "wikidata_id": wikidata_id,
+            "wikidata_name": wikidata_name,
+            "josm_url": generate_josm_url(
+                feature["geometry"]["coordinates"],
+                prop["type"],
+                prop["id"],
+                st,
+            ),
+        }
+        items.append(item)
+
+    return json.dumps(items, separators=(",", ":"))
+
+
 @app.route("/api/items/<item_type>/<item_id>")
 @docache(minutes=settings.CACHE_TIME, content_type="application/json")
 def items(item_type: str, item_id: str):
@@ -140,10 +196,14 @@ def items(item_type: str, item_id: str):
     try:
         item_id = int(item_id[1:])
         result = collection.find_one(
-        {"$and": [{"properties.id": item_id, "properties.type": feature_type}]},
-        {"_id": 0},)
+            {"$and": [{"properties.id": item_id, "properties.type": feature_type}]},
+            {"_id": 0},
+        )
         if result is None:
-            return {"Result": 0, "Reason": "No object of this type/id combination have been found"}
+            return {
+                "Result": 0,
+                "Reason": "No object of this type/id combination have been found",
+            }
     except TypeError:
         return {"Result": 0, "Reason": "404. Wrong ID"}
 
@@ -171,6 +231,9 @@ def import_pow_geojson(import_key: str, force: int):
     if execute:
         # 1. Filter Geojson:
         geojson_file_processed = filter_osm_geojson(geojson_output_file)
+
+        # 2. Compare with Wikidata
+        geojson_file_processed = compare_osm_wikidata(geojson_file_processed)
 
         # 2. Simplify geometry
         geojson_file_processed = simplify_geojson_geometry(geojson_output_file)
@@ -350,5 +413,5 @@ def import_parish_geojson(import_key: str, force: int):
 
 if __name__ == "__main__":
     app.jinja_env.auto_reload = True
-    app.config['TEMPLATES_AUTO_RELOAD'] = True
+    app.config["TEMPLATES_AUTO_RELOAD"] = True
     app.run(debug=settings.debug_mode, host=settings.host)

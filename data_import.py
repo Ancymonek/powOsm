@@ -1,7 +1,7 @@
 import json
 from builtins import FileNotFoundError
 from datetime import date, datetime
-
+import geopy.distance
 import geojson
 import requests
 import visvalingamwyatt as vw
@@ -9,10 +9,20 @@ from osm2geojson import json2geojson
 from osm2geojson.main import xml2geojson
 from pymongo import GEOSPHERE, TEXT, MongoClient
 from pymongo.errors import BulkWriteError
+import urllib.parse
 
-from settings import (OVERPASS_ENDPOINTS, Path, hours_filter_values, logging,
-                      missing_tags_mapping, pow_filter_short_values,
-                      pow_filter_values, religion_mapping, uri)
+from settings import (
+    OVERPASS_ENDPOINTS,
+    DATA_FOLDER,
+    Path,
+    hours_filter_values,
+    logging,
+    missing_tags_mapping,
+    pow_filter_short_values,
+    pow_filter_values,
+    religion_mapping,
+    uri,
+)
 
 
 def format_coordinates(lat, long, fp: int = 5):
@@ -65,6 +75,36 @@ def simplify_geojson_geometry(file: str, fp: int = 5):
             json.dump(data, json_file)
 
     return file
+
+
+def get_wikidata():
+    wikidata_file = f"{DATA_FOLDER}/wikidata_query.json"
+    with open(wikidata_file, "r", encoding="utf-8") as json_file:
+        data = json.load(json_file)
+
+        wikidata_items = {}
+
+        for item in data["results"]["bindings"]:
+            coordinates = (
+                item["coordinates"]["value"]
+                .replace("Point(", "")
+                .replace(")", "")
+                .split(" ")
+            )
+
+            coordinates = [float(loc) for loc in coordinates]
+
+            wikidata_id = item["item"]["value"].replace(
+                "http://www.wikidata.org/entity/", ""
+            )
+            wikidata_name = item["itemLabel"]["value"]
+
+            wikidata_items[wikidata_id] = {
+                "coordinates": coordinates,
+                "name": wikidata_name,
+            }
+
+    return wikidata_items
 
 
 def filter_osm_geojson(file: str) -> str:
@@ -124,6 +164,39 @@ def filter_osm_geojson(file: str) -> str:
     return file
 
 
+def compare_osm_wikidata(file: str) -> str:
+    file_path = Path(file)
+
+    with open(file_path, "r", encoding="utf-8") as json_file:
+        try:
+            data = json.load(json_file)
+            wikidata_items = get_wikidata()
+
+            for feature in data["features"]:
+                osm_coords = feature["geometry"]["coordinates"]
+                prop = feature["properties"]
+
+                for key, value in wikidata_items.items():
+                    wikidata_item = value["coordinates"]
+                    distance = round(
+                        geopy.distance.great_circle(osm_coords, wikidata_item).meters, 2
+                    )
+
+                    if distance < 10:
+                        keys = [key]
+                        names = [value["name"]]
+                        prop["wid"] = keys
+                        prop["wn"] = names
+        except ValueError as e:
+            logging.error(f"Value Error: {e}")
+            return None
+    with open(file_path, "w", encoding="utf-8") as json_file:
+        json.dump(data, json_file)
+
+    print(file)
+    return file
+
+
 def validate_input(
     input_value: str,
     filter_set: set,
@@ -136,8 +209,7 @@ def validate_input(
     for elem in filter_set:
         for word in words:
             if ignore_sensivity and (
-                elem.lower() in word.lower()
-                and word.lower() not in list(map(str.lower, excluded_value))
+                elem in word and word not in list(map(str.lower, excluded_value))
             ):
                 matches.append(word)
             elif ignore_sensivity is False and (
@@ -332,3 +404,60 @@ def export_date_to_html_file(import_date: datetime, export_html: str):
         f.write(paragraph)
 
     logging.info(f"Finish: Statistics saved to .html file: {export_folder}.")
+
+
+def suggest_tags(feature):
+    props = feature["properties"]
+    tags = props["tags"]
+
+    suggested_tags = []
+    if tags.get("building") == "yes" and tags.get("name"):
+        if any(
+            x in tags.get("name") for x in ["kościół", "Kościół", "cerkiew", "Cerkiew"]
+        ):
+            suggested_tags.append("building=church")
+        if any(x in tags.get("name") for x in ["kaplica", "Kaplica"]):
+            suggested_tags.append("building=chapel")
+    if tags.get("church:type") is None and tags.get("name"):
+        if any(x in tags.get("name").lower() for x in ["fil.", "filialny", "filialna"]):
+            suggested_tags.append("church:type=filial")
+        if (
+            any(
+                x in tags.get("name").lower()
+                for x in ["par.", "parafialny", "parafialna"]
+            )
+            and tags.get("name") != "Salka parafialna"
+        ):
+            suggested_tags.append("church:type=parish")
+        if any(
+            x in tags.get("name").lower() for x in ["pom.", "pomocniczy", "pomocnicza"]
+        ):
+            suggested_tags.append("church:type=rectoral")
+        if any(x in tags.get("name").lower() for x in ["garnizonowy"]):
+            suggested_tags.append("church:type=garrison")
+        if any(x in tags.get("name").lower() for x in ["szpitalny", "szpitalna"]):
+            suggested_tags.append("church:type=hospital")
+        if any(x in tags.get("name").lower() for x in ["więzienny", "więzienna"]):
+            suggested_tags.append("church:type=prison")
+        if any(
+            x in tags.get("name").lower()
+            for x in ["kościół klasztorny", "kaplica klasztorna"]
+        ):
+            suggested_tags.append("church:type=monastic")
+    if props.get("wid") is not None:
+        suggested_tags.append(f"wikidata={props.get('wid')[0]}")
+
+    return "|".join(suggested_tags)
+
+
+def coords_to_bbox(coords):
+    lat = coords[0]
+    lon = coords[1]
+    return [lat + 0.001144, lat - 0.001144, lon - 0.00074, lon + 0.00074]
+
+
+def generate_josm_url(coords, item_type, item_id, addtags):
+
+    bbox = coords_to_bbox(coords)
+
+    return f"http://127.0.0.1:8111/load_and_zoom?left={bbox[1]}&top={bbox[3]}&right={bbox[0]}&bottom={bbox[2]}&select={item_type}{item_id}&addtags={urllib.parse.quote_plus(addtags)}"
