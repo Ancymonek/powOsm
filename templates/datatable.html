@@ -35,7 +35,7 @@ var table = new Tabulator("#pois", {
         page: true, //persist page
         columns: true, //persist columns
     },
-   ajaxURL: "http://127.0.0.1:5000/api/list/",  
+   ajaxURL: "{{ url_for('list_items') }}",  
    height:"100%",
    layout:"fitDataFill",
    placeholder:"Brak danych",
@@ -60,7 +60,7 @@ var table = new Tabulator("#pois", {
    columns:[
       {title:"Id", field:"id", sorter:"number", formatter:function(cell, formatterParams){
        let featureId = cell.getValue();
-            return '<a href="https://plname.usermd.net/#,' + featureId + '">' + featureId + '</a>';
+            return '<a href="https://plname.usermd.net/#,' + featureId + '" target="_blank">' + featureId + '</a>';
     }},
       {title:"JOSM", field:"josm_url", formatter:function(cell, formatterParams){
        var josmUrl = cell.getValue();
