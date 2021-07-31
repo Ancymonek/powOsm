@@ -153,7 +153,9 @@ pow_filter_values = {
     "Matrki",
     "Śiwętego",
     "Kalica",
-    "Zespoł"
+    "Zespoł",
+    "Sw.",
+    "sw."
 }
 pow_filter_sensitive_values = "jezus"
 

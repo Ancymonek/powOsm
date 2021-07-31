@@ -132,7 +132,10 @@ def filter_osm_geojson(file: str) -> str:
                             prop["s"] = 1
 
                     if key == "religion":
-                        prop["r"] = religion_mapping[value]
+                        try:
+                            prop["r"] = religion_mapping[value]
+                        except KeyError:
+                            prop["r"] = 'other'
 
                     if key == "building" and value == "yes":
                         prop["b"] = 1
