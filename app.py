@@ -64,7 +64,7 @@ assets.register("main_css", css)
 @app.route("/")
 def index():
     return render_template("index.html")
-
+	
 
 @app.route("/table")
 def table():
@@ -233,7 +233,7 @@ def import_pow_geojson(import_key: str, force: int):
         geojson_file_processed = filter_osm_geojson(geojson_output_file)
 
         # 2. Compare with Wikidata
-        geojson_file_processed = compare_osm_wikidata(geojson_file_processed)
+        #geojson_file_processed = compare_osm_wikidata(geojson_file_processed)
 
         # 2. Simplify geometry
         geojson_file_processed = simplify_geojson_geometry(geojson_output_file)
@@ -244,7 +244,7 @@ def import_pow_geojson(import_key: str, force: int):
                 geojson_file_processed, settings.database, settings.POW_COLLECTION
             )
 
-            # 3. Generate statistics of usage of some tags
+            # 3. Generate usage statistics of some tags
             statistics_to_html_file(
                 "religion",
                 osm_tag_statistics(

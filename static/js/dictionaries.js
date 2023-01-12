@@ -204,7 +204,7 @@ const valuesDictionary = {
         'en': 'wayside shrine'
     },
     'wheelchair:limited': {
-        'pl': 'ograniczone',
+        'pl': 'ograniczona',
         'en': 'limited'
     },
     'wheelchair:yes': {
@@ -521,7 +521,7 @@ function featureTags(apiFeature)
             'value': (tag(apiFeature, 'phone') || tag(apiFeature, 'contact:phone')) || ''
         },
         'url': {
-            'label': 'adres z dodatkowymi informacjami',
+            'label': 'strona z dodatkowymi informacjami',
             'value': tag(apiFeature, 'url') || ''
         },
         'description': {

@@ -94,29 +94,19 @@ let osmHumanitarian = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}
     attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 });
 
-var osmBw = L.tileLayer(
-    'http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }
-);
-
 osm.addTo(map);
 
 var baseTree = {
     label: 'Podkład mapowy 🗺️',
     collapsed: true,
     children: [{
-            label: 'OpenStreetMap',
-            layer: osm
-        },
-        {
-            label: 'OpenStreetMap Humanitarian',
-            layer: osmHumanitarian
-        },
-        {
-            label: 'Czarno-biała',
-            layer: osmBw
-        },
+        label: 'OpenStreetMap',
+        layer: osm
+    },
+    {
+        label: 'OpenStreetMap Humanitarian',
+        layer: osmHumanitarian
+    }
     ]
 };
 
@@ -125,112 +115,112 @@ var overlaysTree = {
     collapsed: false,
     layer: poiMarkers,
     children: [{
-            label: 'Obiekty według religii 🛐',
-            collapsed: true,
-            selectAllCheckbox: 'Zaznacz/odznacz wszystkie',
-            children: [{
-                    label: "✝️ chrześcijaństwo",
-                    layer: christianMarkers
-                },
-                {
-                    label: "✡️ judaizm",
-                    layer: jewishMarkers
-                },
-                {
-                    label: "🕉️ buddyzm",
-                    layer: buddhismMarkers
-                },
-                {
-                    label: "☪️ islam",
-                    layer: muslimMarkers
-                },
-                {
-                    label: "☸️ hinduizm",
-                    layer: hinduMarkers
-                },
-                {
-                    label: "🛐 neopogaństwo",
-                    layer: paganMarkers
-                },
-                {
-                    label: "🛐 wiele wyznań",
-                    layer: multifaithMarkers
-                },
-                {
-                    label: "🛐 inne",
-                    layer: otherReligonMarkers
-                },
-            ]
+        label: 'Obiekty według religii 🛐',
+        collapsed: true,
+        selectAllCheckbox: 'Zaznacz/odznacz wszystkie',
+        children: [{
+            label: "✝️ chrześcijaństwo",
+            layer: christianMarkers
         },
         {
-            label: 'Obiekty do poprawy/uzupełnienia ✏️',
-            collapsed: true,
-            selectAllCheckbox: 'Zaznacz/odznacz wszystkie',
-            children: [{
-                    label: "Literówki w nazwie (Kościoł, Kościol itp.)",
-                    layer: wrongNameMarkers
-                },
-                {
-                    label: "Skróty do rozwinięcia/usunięcia (NMP, św. par., fil.) ",
-                    layer: wrongShortnameMarkers
-                },
-                {
-                    label: "Brak tagu 'religion'",
-                    layer: missingReligionTagMarkers
-                },
-                {
-                    label: "Brak tagu 'denomination'",
-                    layer: missingDenominationTagMarkers
-                },
-                {
-                    label: "Brak tagu 'diocese'",
-                    layer: missingDioceseTagMarkers
-                },
-                {
-                    label: "Brak tagu 'deanery'",
-                    layer: missingDeaneryTagMarkers
-                },
-                {
-                    label: "Ogólna wartość tagu budynku (building=yes)",
-                    layer: missingBuildingNameValueMarkers
-                },
-                {
-                    label: "Błędne wartości 'service_times'/'opening_hours'",
-                    layer: wrongServiceHoursValueMarkers
-                },
-            ],
+            label: "✡️ judaizm",
+            layer: jewishMarkers
         },
         {
-            label: 'Kancelarie parafialne, biura 💼',
-            collapsed: true,
-            layer: officeMarkers,
-            children: []
+            label: "🕉️ buddyzm",
+            layer: buddhismMarkers
         },
         {
-            label: 'Zakony 📿',
-            collapsed: true,
-            layer: monasteryMarkers,
-            children: []
+            label: "☪️ islam",
+            layer: muslimMarkers
         },
+        {
+            label: "☸️ hinduizm",
+            layer: hinduMarkers
+        },
+        {
+            label: "🛐 neopogaństwo",
+            layer: paganMarkers
+        },
+        {
+            label: "🛐 wiele wyznań",
+            layer: multifaithMarkers
+        },
+        {
+            label: "🛐 inne",
+            layer: otherReligonMarkers
+        },
+        ]
+    },
+    {
+        label: 'Obiekty do poprawy/uzupełnienia ✏️',
+        collapsed: true,
+        selectAllCheckbox: 'Zaznacz/odznacz wszystkie',
+        children: [{
+            label: "Literówki w nazwie (Kościoł, Kościol itp.)",
+            layer: wrongNameMarkers
+        },
+        {
+            label: "Skróty do rozwinięcia/usunięcia (NMP, św. par., fil.) ",
+            layer: wrongShortnameMarkers
+        },
+        {
+            label: "Brak tagu 'religion'",
+            layer: missingReligionTagMarkers
+        },
+        {
+            label: "Brak tagu 'denomination'",
+            layer: missingDenominationTagMarkers
+        },
+        {
+            label: "Brak tagu 'diocese'",
+            layer: missingDioceseTagMarkers
+        },
+        {
+            label: "Brak tagu 'deanery'",
+            layer: missingDeaneryTagMarkers
+        },
+        {
+            label: "Ogólna wartość tagu budynku (building=yes)",
+            layer: missingBuildingNameValueMarkers
+        },
+        {
+            label: "Błędne wartości 'service_times'/'opening_hours'",
+            layer: wrongServiceHoursValueMarkers
+        },
+        ],
+    },
+    {
+        label: 'Kancelarie parafialne, biura 💼',
+        collapsed: true,
+        layer: officeMarkers,
+        children: []
+    },
+    {
+        label: 'Zakony 📿',
+        collapsed: true,
+        layer: monasteryMarkers,
+        children: []
+    },
 
-        {
-            label: 'Podział religijny',
-            collapsed: true,
-            selectAllCheckbox: 'Zaznacz/odznacz wszystkie',
-            children: [{
-                    label: 'Dekanaty',
-                    layer: deaneriesMarkers,
-                },
-                {
-                    label: 'Parafie',
-                    layer: parishesMarkers,
-                }
-            ]
+    {
+        label: 'Podział religijny',
+        collapsed: true,
+        selectAllCheckbox: 'Zaznacz/odznacz wszystkie',
+        children: [{
+            label: 'Dekanaty',
+            layer: deaneriesMarkers,
         },
+        {
+            label: 'Parafie',
+            layer: parishesMarkers,
+        }
+        ]
+    },
     ]
 };
 
-controlLayersOptions = {closedSymbol: '<span class="has-text-weight-bold">+</span>', openedSymbol: '<span class="has-text-weight-bold">-</span>'};
+controlLayersOptions = { closedSymbol: '<span class="has-text-weight-bold">+</span>', openedSymbol: '<span class="has-text-weight-bold">-</span>' };
 var controlLayer = new L.control.layers.tree(baseTree, overlaysTree, controlLayersOptions).addTo(map);
 
 // Zoom and map interaction
@@ -270,21 +260,13 @@ function generateCardTemplate(id, apiFeature) {
         }
 
         // Order: 
-        // 1. 'Image' tag (works for Wikimedia Commons url and valid 'File:XXXX.jpg' format, and Mapillary) - synchronous
+        // 1. 'Image' tag (works for Wikimedia Commons url and valid 'File:XXXX.jpg' format) - synchronous
         // 2. Wikidata main image (api request + img request) - asynchronous,
         // To do: 1. Wikimedia Commons category parse and get first image, 2. Get image if only Wikipedia article is provided (it's not so easy*)
 
-        if (tags.image.value && (tags.image.value.startsWith(mapillaryImagesPrefix) || tags.image.value.startsWith(wikimediaCommonsPrefix) || tags.image.value.startsWith(wikimediaCommonsShortPrefix))) {
+        if (tags.image.value && (tags.image.value.startsWith(wikimediaCommonsPrefix) || tags.image.value.startsWith(wikimediaCommonsShortPrefix))) {
             let image = tags.image.value;
-            if (image.startsWith(mapillaryImagesPrefix)) {
-                headerImage = parseImageTag(image);
-                let contributionInfo = {
-                    'author': '<a href="' + image + '" target="_blank" rel="noreferrer">Mapillary</a>',
-                    'license': 'CC BY-SA 4.0',
-                    'licenseUrl': 'https://creativecommons.org/licenses/by-sa/4.0/'
-                };
-                showContribution(contributionInfo);
-            } else if (image.startsWith(wikimediaCommonsPrefix) || image.startsWith(wikimediaCommonsShortPrefix)) {
+            if (image.startsWith(wikimediaCommonsPrefix) || image.startsWith(wikimediaCommonsShortPrefix)) {
                 let imageDecodedName = parseImageTag(image);
                 let fullWikimediaUrl = getWikimediaCommonsUrl(imageDecodedName);
                 getWikimediaCommonsLicenseInfo(imageDecodedName);
@@ -310,20 +292,19 @@ function generateCardTemplate(id, apiFeature) {
 
         organizationDiv.innerHTML = showTag('churchType') + showTag('operator') + showTag('diocese') + showTag('deanery') + showTag('serviceTimes') + showTag('openingHours') + showTag('community') + showTag('communityGender');
 
-        addressDiv.innerHTML = `${showSectionHeader('adres')}<p class="mb-1 ml-2">${tags.street.value}&nbsp;${tags.houseNumber.value},&nbsp;${tags.postCode.value}&nbsp;${tags.city.value || tags.place.value }</p>`;
+        addressDiv.innerHTML = `${showSectionHeader('adres')}<p class="mb-1 ml-2">${tags.street.value}&nbsp;${tags.houseNumber.value},&nbsp;${tags.postCode.value}&nbsp;${tags.city.value || tags.place.value}</p>`;
 
-        contactDiv.innerHTML = showUrlTag('website', tags.website.value, 'witryna') + showTag('email') + showTag('phone');
+        contactDiv.innerHTML = showUrlTag('website', tags.website.value, 'adres') + showTag('email') + showTag('phone');
 
         moreInfoDiv.innerHTML = showUrlTag('wikipedia', getWikipediaUrl(tags.wikipedia.value), parseWikipediaTitle(tags.wikipedia.value)) + showUrlTag('wikidata', 'https://www.wikidata.org/wiki/' + tags.wikidata.value, tags.wikidata.value, '', '<a href="https://reasonator.toolforge.org/?q=' + tags.wikidata.value + '" rel="noopener" target="_blank" title="Reasonator"><img src="../static/img/reasonator.png" height="20" width="20" alt="Reasonator" class="pl-1"></a>') +
-            showUrlTag('mapillary', tags.mapillary.value, 'zdjęcie') + showUrlTag('url', tags.url.value, 'witryna') +
+            showUrlTag('mapillary', tags.mapillary.value, 'zdjęcie') + showUrlTag('url', tags.url.value, 'adres') +
             showTag('description') + showTag('wheelchair', '', ' <sup>♿</sup>');
 
         // Setting visibility of particular sections - refactoring needed
         if (!tags.building.value) {
             missingTags.push('budynek');
-        } 
-        else 
-        {
+        }
+        else {
             buildingDiv.innerHTML = showSectionHeader('budynek') + buildingDiv.innerHTML;
         }
         if (!organizationDiv.innerHTML) {
@@ -347,8 +328,7 @@ function generateCardTemplate(id, apiFeature) {
             moreInfoDiv.innerHTML = showSectionHeader('dodatkowe informacje') + moreInfoDiv.innerHTML;
         }
 
-        if (missingTags.length == 5)
-        {
+        if (missingTags.length == 5) {
             var notification = showBulmaNotification('warning', 'Niestety obiekt nie posiada szczegółowych tagów (<a href="https://wiki.openstreetmap.org/wiki/Pl:Tag:amenity%3Dplace_of_worship#U.C5.BCycie" target="_blank" rel="noopener">Zobacz przykład użycia na Wiki</a>). Użyj przycisków edycji do uzupełnienia danych o obiekcie.', true);
         }
 
@@ -360,12 +340,12 @@ function generateCardTemplate(id, apiFeature) {
             denomination = 'ortodoksyjny';
         }
 
-        let actionButtons = '<div class="is-pulled-right"><span class="tag is-link is-light"><a href="' + osmShowUrl + '" target="blank" rel="noopener">🔍 w OSM</a></span> <span class="tag is-link is-light"><a href="'+ osmEditUrlId +'" rel="noopener" target="_blank">📝 Edytuj (iD)</a></span> <span class="tag is-link is-light"><a href="#" onclick="editInJosm(\'' + osmEditUrlRemote + '\')">🔌 Edytuj (JOSM)</a></span></div>';
+        let actionButtons = '<div class="is-pulled-right"><span class="tag is-link is-light"><a href="' + osmShowUrl + '" target="blank" rel="noopener">🔍 w OSM</a></span> <span class="tag is-link is-light"><a href="' + osmEditUrlId + '" rel="noopener" target="_blank">📝 Edytuj (iD)</a></span> <span class="tag is-link is-light"><a href="#" onclick="editInJosm(\'' + osmEditUrlRemote + '\')">🔌 Edytuj (JOSM)</a></span></div>';
         let cardContent = actionButtons + (notification || '') + (buildingDiv.outerHTML || '') + (organizationDiv.outerHTML || '') + (addressDiv.outerHTML || '') + (contactDiv.outerHTML || '') + (moreInfoDiv.outerHTML || '');
         let title = tags.name.value;
         let subtitle = religion + ' ∘ ' + denomination;
-        let footer = ''; //showCardFooter(osmShowUrl, '🔍 w OSM', 'details', osmEditUrlId, '📝 Edytuj (iD)', 'edit', osmEditUrlRemote, '🔌 Edytuj (JOSM)', 'edit'); - bottom panel removed due to feedback
-        
+        let footer = '';
+
 
         card = L.control.card(cardContent, title, subtitle, headerImage, footer, {
             position: 'topleft'

@@ -135,7 +135,7 @@ def filter_osm_geojson(file: str) -> str:
                         try:
                             prop["r"] = religion_mapping[value]
                         except KeyError:
-                            prop["r"] = 'other'
+                            prop["r"] = 9
 
                     if key == "building" and value == "yes":
                         prop["b"] = 1
@@ -196,7 +196,6 @@ def compare_osm_wikidata(file: str) -> str:
     with open(file_path, "w", encoding="utf-8") as json_file:
         json.dump(data, json_file)
 
-    print(file)
     return file
 
 

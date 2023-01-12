@@ -153,6 +153,3 @@ cython_debug/
 /templates/churchtype_stats.html
 /templates/building_stats.html
 /static/assets
-/.idea
-/churches.csv
-playground.py

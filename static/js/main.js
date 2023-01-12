@@ -71,7 +71,7 @@ function setCardImage(url) {
 
     if (typeof headerImg !== 'undefined' && headerImg !== null) {
         headerImg.src = cardImage;
-        headerImg.onload = function () {};
+        headerImg.onload = function () { };
         headerImg.src = url;
     }
 }
@@ -171,7 +171,6 @@ function showHint(text) {
 
     return superScript.outerHTML;
 }
-
 function showCardFooter(url1, label1, id1, url2, label2, id2, url3, label3, id3) {
     let firstElem = document.createElement('a');
     firstElem.setAttribute('target', '_blank');
@@ -199,7 +198,6 @@ function showCardFooter(url1, label1, id1, url2, label2, id2, url3, label3, id3)
 
     return firstElem.outerHTML + secondElem.outerHTML + thirdElem.outerHTML;
 }
-
 function showNumberOfFeatures(count) {
     let countDiv = document.getElementById('featuresCount');
     countDiv.textContent = 'Obiekty na mapie: ' + count + ' ∘ ';
@@ -290,7 +288,7 @@ function getFeatureIdFromHash(url) {
         let idFromUrl = splittedUrl[1];
 
         return idFromUrl;
-    } else {}
+    } else { }
 }
 
 function setFeatureIdHash(id, replace) {
@@ -328,7 +326,6 @@ function translateValue(dict, tagName, property) {
 }
 
 function tag(feature, tagName, replaceUndefined) {
-    //to do: obsługa wielu wartości w tagu
     if (feature) {
         if (tagName) {
             let property = feature.properties.tags[tagName];
@@ -371,6 +368,8 @@ function parseOpeningHours(property) {
             let oh = new opening_hours(hours, undefined, 2);
             hoursPrettified = oh.prettifyValue({
                 conf: {
+                    rule_sep_string: '\n',
+                    print_semicolon: false,
                     locale: locale
                 },
             });
@@ -460,8 +459,8 @@ function getWikimediaCommonsLicenseInfo(filename) {
 
         var wikidataUrl = 'https://en.wikipedia.org/w/api.php?action=query&prop=imageinfo&iiprop=extmetadata&titles=File%3A' + encodeURIComponent(filename) + '&format=json&origin=*';
         return fetch(wikidataUrl, {
-                method: "GET",
-            })
+            method: "GET",
+        })
             .then(response => response.json())
             .then(json => {
                 if (json) {
@@ -528,8 +527,8 @@ function getWikidataImg(property) {
             'https://www.wikidata.org/w/api.php?action=wbgetclaims&format=json&origin=*&property=P18&entity=' +
             encodeURIComponent(property);
         return fetch(wikidataUrl, {
-                method: "GET",
-            })
+            method: "GET",
+        })
             .then(response => response.json())
             .then(json => {
                 if (json.claims.P18) {
@@ -556,12 +555,7 @@ function parseImageTag(imageUrl) {
         cardNewImage = decodeURIComponent(shortFileName[1]);
         return cardNewImage;
     }
-    //Mapillary (direct url)
-    else if (imageUrl.startsWith(mapillaryImagesPrefix)) {
-        let targetImageSize = 640;
-        let cardNewImage = imageUrl.replace('thumb-2048', 'thumb-' + targetImageSize).replace('thumb-1024', 'thumb-' + targetImageSize);
-        return cardNewImage;
-    } else {
+    else {
         return undefined;
     }
 }
