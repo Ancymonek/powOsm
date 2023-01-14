@@ -446,26 +446,32 @@ function editInJosm(url) {
     request.send();
 }
 
-function concatenateAddress(place, city, street, streetNumber, postCode) {
-    let address = '';
-    if (street) {
-      address += street;
-      if (streetNumber) {
-        address += ` ${streetNumber}`;
-      } else {
-        address += '<sup> Uwaga: adres niepełny (brak numeru ulicy)</sup>';
-      }
+function concatenateAddress(place, city, street, streetNumber, postCode)
+{
+    if (street && streetNumber && city) {
+        return street + ' ' + streetNumber + ', ' + postCode + ' ' + city
     }
-    if (place || city) {
-      address += `, ${place || city}`;
-    } else {
-      address += '<sup> Uwaga: adres niepełny (brak miejscowości)</sup>';
+    else if (streetNumber && place && !city )
+    {
+        return place + ' ' + streetNumber + ', ' + postCode + ' ' + place
     }
-    if (postCode) {
-      address += ` ${postCode}`;
+    else if (street && !streetNumber && (place || city))
+    {
+        return `${place || city}, ${street}`
     }
-    return address;
-  }
+    else if (street && streetNumber && !(place||city))
+    {
+        return street + ' ' + streetNumber + '<sup> Uwaga: adres niepełny (brak miejscowości)</sup>'
+    }
+    else if (street && !streetNumber && !(place || city))
+    {
+        return street  + '<sup> Uwaga: adres niepełny (brak miejscowości)</sup>'
+    }
+    else
+    {
+        return (postCode + ' ' || '') + (city || place)
+    }
+}
 
 //#endregion OSM
 
