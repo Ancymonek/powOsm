@@ -457,7 +457,7 @@ function concatenateAddress(place, city, street, streetNumber, postCode)
     }
     else if (street && !streetNumber && (place || city))
     {
-        return `${place || city}, ${street}`
+        return `${street},&nbsp;${place || city}`
     }
     else if (street && streetNumber && !(place||city))
     {
