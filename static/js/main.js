@@ -279,7 +279,7 @@ function clearActiveMarker(markerStyle) {
 }
 //#endregion Geo+Map functions
 
-//#region Window functions
+//#region window functions
 function getFeatureIdFromHash(url) {
     // To do - case with url without '#' part
     let match = url.match(/#.*[,][NnWwRr][0-9]+/);
@@ -446,6 +446,26 @@ function editInJosm(url) {
     request.send();
 }
 
+function concatenateAddress(place, city, street, streetNumber, postCode) {
+    let address = '';
+    if (street) {
+      address += street;
+      if (streetNumber) {
+        address += ` ${streetNumber}`;
+      } else {
+        address += '<sup> Uwaga: adres niepełny (brak numeru ulicy)</sup>';
+      }
+    }
+    if (place || city) {
+      address += `, ${place || city}`;
+    } else {
+      address += '<sup> Uwaga: adres niepełny (brak miejscowości)</sup>';
+    }
+    if (postCode) {
+      address += ` ${postCode}`;
+    }
+    return address;
+  }
 
 //#endregion OSM
 

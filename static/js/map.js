@@ -292,7 +292,11 @@ function generateCardTemplate(id, apiFeature) {
 
         organizationDiv.innerHTML = showTag('churchType') + showTag('operator') + showTag('diocese') + showTag('deanery') + showTag('serviceTimes') + showTag('openingHours') + showTag('community') + showTag('communityGender');
 
-        addressDiv.innerHTML = `${showSectionHeader('adres')}<p class="mb-1 ml-2">${tags.street.value}&nbsp;${tags.houseNumber.value},&nbsp;${tags.postCode.value}&nbsp;${tags.city.value || tags.place.value}</p>`;
+        addressDiv.innerHTML = `${showSectionHeader('adres')}
+                        <p class="mb-1 ml-2">
+                        ${concatenateAddress(tags.place.value, tags.city.value, tags.street.value, tags.houseNumber.value, tags.postCode.value)}
+                        </p>
+                        `;
 
         contactDiv.innerHTML = showUrlTag('website', tags.website.value, 'adres') + showTag('email') + showTag('phone');
 
