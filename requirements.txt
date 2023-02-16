@@ -43,4 +43,4 @@ typing-extensions==3.7.4.3
 urllib3>=1.26.5
 visvalingamwyatt==0.1.4
 webassets==2.0
-Werkzeug==1.0.1
+Werkzeug==2.2.3
